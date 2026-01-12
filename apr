@@ -33,7 +33,6 @@
 #   --wait             Wait for completion (blocking)
 #   --login            Manual login mode (first-time setup)
 #   --keep-browser     Keep browser open after completion
-#   -v, --verbose      Verbose output
 #   --version          Show version
 #
 
@@ -45,14 +44,9 @@ VERSION="1.0.0"
 # Exit Codes
 # -----------------------------------------------------------------------------
 readonly EXIT_SUCCESS=0
-readonly EXIT_GENERAL_ERROR=1
 readonly EXIT_USAGE_ERROR=2
 readonly EXIT_DEPENDENCY_ERROR=3
 readonly EXIT_CONFIG_ERROR=4
-readonly EXIT_NETWORK_ERROR=10
-readonly EXIT_AUTH_REQUIRED=11
-readonly EXIT_ORACLE_ERROR=12
-readonly EXIT_INTERNAL_ERROR=20
 
 # -----------------------------------------------------------------------------
 # Colors (fallback when gum not available)
@@ -60,24 +54,20 @@ readonly EXIT_INTERNAL_ERROR=20
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 MAGENTA='\033[0;35m'
 WHITE='\033[1;37m'
 BOLD='\033[1m'
 DIM='\033[2m'
-ITALIC='\033[3m'
 NC='\033[0m'
 
 # Gum availability flag
 GUM_AVAILABLE=false
 
 # Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APR_HOME="${APR_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/apr}"
 APR_CACHE="${APR_CACHE:-${XDG_CACHE_HOME:-$HOME/.cache}/apr}"
 CONFIG_DIR=".apr"
-CONFIG_FILE="$CONFIG_DIR/config.yaml"
 
 # Oracle command (determined at runtime)
 ORACLE_CMD=""
@@ -405,16 +395,16 @@ run_setup() {
             "Welcome to the APR Setup Wizard!" \
             "" \
             "This will help you configure a new revision workflow." \
-            "You'll specify your documents and review preferences."
+            "You'll specify your documents and review preferences." >&2
     else
-        echo -e "${CYAN}╭────────────────────────────────────────────────────────────╮${NC}"
-        echo -e "${CYAN}│${NC}  ${BOLD}Welcome to the APR Setup Wizard!${NC}                         ${CYAN}│${NC}"
-        echo -e "${CYAN}│${NC}                                                            ${CYAN}│${NC}"
-        echo -e "${CYAN}│${NC}  This will help you configure a new revision workflow.     ${CYAN}│${NC}"
-        echo -e "${CYAN}│${NC}  You'll specify your documents and review preferences.     ${CYAN}│${NC}"
-        echo -e "${CYAN}╰────────────────────────────────────────────────────────────╯${NC}"
+        echo -e "${CYAN}╭────────────────────────────────────────────────────────────╮${NC}" >&2
+        echo -e "${CYAN}│${NC}  ${BOLD}Welcome to the APR Setup Wizard!${NC}                         ${CYAN}│${NC}" >&2
+        echo -e "${CYAN}│${NC}                                                            ${CYAN}│${NC}" >&2
+        echo -e "${CYAN}│${NC}  This will help you configure a new revision workflow.     ${CYAN}│${NC}" >&2
+        echo -e "${CYAN}│${NC}  You'll specify your documents and review preferences.     ${CYAN}│${NC}" >&2
+        echo -e "${CYAN}╰────────────────────────────────────────────────────────────╯${NC}" >&2
     fi
-    echo ""
+    echo "" >&2
 
     ensure_config_dir
 
@@ -422,13 +412,13 @@ run_setup() {
     print_step 1 6 "Workflow name"
     local workflow_name
     workflow_name=$(input "Workflow name" "default")
-    echo ""
+    echo "" >&2
 
     # Step 2: Project description
     print_step 2 6 "Project description"
     local description
     description=$(input "Brief description" "Iterative specification refinement")
-    echo ""
+    echo "" >&2
 
     # Step 3: README/Overview document
     print_step 3 6 "README/Overview document"
@@ -440,7 +430,7 @@ run_setup() {
         exit $EXIT_CONFIG_ERROR
     fi
     print_success "README: $readme_path"
-    echo ""
+    echo "" >&2
 
     # Step 4: Specification document
     print_step 4 6 "Specification document"
@@ -452,7 +442,7 @@ run_setup() {
         exit $EXIT_CONFIG_ERROR
     fi
     print_success "Specification: $spec_path"
-    echo ""
+    echo "" >&2
 
     # Step 5: Implementation document (optional)
     print_step 5 6 "Implementation document (optional)"
@@ -466,7 +456,7 @@ run_setup() {
             print_success "Implementation: $impl_path"
         fi
     fi
-    echo ""
+    echo "" >&2
 
     # Step 6: Review preferences
     print_step 6 6 "Review preferences"
@@ -482,7 +472,7 @@ run_setup() {
         *) ;;
     esac
 
-    echo ""
+    echo "" >&2
 
     # Create workflow directory and config
     local workflow_dir="$CONFIG_DIR/workflows"
@@ -540,7 +530,7 @@ default_workflow: $workflow_name
 EOF
     fi
 
-    echo ""
+    echo "" >&2
     if [[ "$GUM_AVAILABLE" == "true" ]]; then
         gum style \
             --border rounded \
@@ -552,17 +542,17 @@ EOF
             "  apr run 1" \
             "" \
             "To run with implementation doc:" \
-            "  apr run 1 --include-impl"
+            "  apr run 1 --include-impl" >&2
     else
-        echo -e "${GREEN}╭────────────────────────────────────────────────────────────╮${NC}"
-        echo -e "${GREEN}│${NC}  ${BOLD}✓ Workflow '$workflow_name' created successfully!${NC}"
-        echo -e "${GREEN}│${NC}"
-        echo -e "${GREEN}│${NC}  To run your first revision round:"
-        echo -e "${GREEN}│${NC}    ${CYAN}apr run 1${NC}"
-        echo -e "${GREEN}│${NC}"
-        echo -e "${GREEN}│${NC}  To run with implementation doc:"
-        echo -e "${GREEN}│${NC}    ${CYAN}apr run 1 --include-impl${NC}"
-        echo -e "${GREEN}╰────────────────────────────────────────────────────────────╯${NC}"
+        echo -e "${GREEN}╭────────────────────────────────────────────────────────────╮${NC}" >&2
+        echo -e "${GREEN}│${NC}  ${BOLD}✓ Workflow '$workflow_name' created successfully!${NC}" >&2
+        echo -e "${GREEN}│${NC}" >&2
+        echo -e "${GREEN}│${NC}  To run your first revision round:" >&2
+        echo -e "${GREEN}│${NC}    ${CYAN}apr run 1${NC}" >&2
+        echo -e "${GREEN}│${NC}" >&2
+        echo -e "${GREEN}│${NC}  To run with implementation doc:" >&2
+        echo -e "${GREEN}│${NC}    ${CYAN}apr run 1 --include-impl${NC}" >&2
+        echo -e "${GREEN}╰────────────────────────────────────────────────────────────╯${NC}" >&2
     fi
 }
 
@@ -631,18 +621,18 @@ run_round() {
             "$(gum style --foreground 39 "Workflow:") $workflow" \
             "$(gum style --foreground 39 "Model:") $model" \
             "$(gum style --foreground 39 "Include impl:") $include_impl" \
-            "$(gum style --foreground 39 "Output:") $output_file"
+            "$(gum style --foreground 39 "Output:") $output_file" >&2
     else
-        echo -e "${MAGENTA}╭────────────────────────────────────────────────────────────╮${NC}"
-        echo -e "${MAGENTA}│${NC}  ${BOLD}REVISION ROUND $round_num${NC}"
-        echo -e "${MAGENTA}│${NC}"
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Workflow:${NC}     $workflow"
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Model:${NC}        $model"
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Include impl:${NC} $include_impl"
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Output:${NC}       $output_file"
-        echo -e "${MAGENTA}╰────────────────────────────────────────────────────────────╯${NC}"
+        echo -e "${MAGENTA}╭────────────────────────────────────────────────────────────╮${NC}" >&2
+        echo -e "${MAGENTA}│${NC}  ${BOLD}REVISION ROUND $round_num${NC}" >&2
+        echo -e "${MAGENTA}│${NC}" >&2
+        echo -e "${MAGENTA}│${NC}  ${CYAN}Workflow:${NC}     $workflow" >&2
+        echo -e "${MAGENTA}│${NC}  ${CYAN}Model:${NC}        $model" >&2
+        echo -e "${MAGENTA}│${NC}  ${CYAN}Include impl:${NC} $include_impl" >&2
+        echo -e "${MAGENTA}│${NC}  ${CYAN}Output:${NC}       $output_file" >&2
+        echo -e "${MAGENTA}╰────────────────────────────────────────────────────────────╯${NC}" >&2
     fi
-    echo ""
+    echo "" >&2
 
     # Build file arguments
     local file_args=(--file "$readme_path")
@@ -694,20 +684,20 @@ with the git-diff style change versus the original plan shown below:
     # Dry run mode
     if [[ "$dry_run" == "true" ]]; then
         print_header "DRY RUN"
-        echo ""
+        echo "" >&2
         print_info "Would execute:"
-        echo ""
-        echo "  $ORACLE_CMD --engine browser \\"
-        echo "    -m \"$model\" \\"
+        echo "" >&2
+        echo "  $ORACLE_CMD --engine browser \\" >&2
+        echo "    -m \"$model\" \\" >&2
         for f in "${file_args[@]}"; do
-            echo "    $f \\"
+            echo "    $f \\" >&2
         done
-        echo "    --slug \"$slug\" \\"
-        echo "    --write-output \"$output_file\" \\"
-        [[ "$manual_login" == "true" ]] && echo "    --browser-manual-login \\"
-        [[ "$keep_browser" == "true" ]] && echo "    --browser-keep-browser \\"
-        echo "    --notify --heartbeat 30 \\"
-        echo "    -p \"<prompt>\""
+        echo "    --slug \"$slug\" \\" >&2
+        echo "    --write-output \"$output_file\" \\" >&2
+        [[ "$manual_login" == "true" ]] && echo "    --browser-manual-login \\" >&2
+        [[ "$keep_browser" == "true" ]] && echo "    --browser-keep-browser \\" >&2
+        echo "    --notify --heartbeat 30 \\" >&2
+        echo "    -p \"<prompt>\"" >&2
         exit $EXIT_SUCCESS
     fi
 
@@ -743,20 +733,20 @@ with the git-diff style change versus the original plan shown below:
     # Execute
     print_info "Starting GPT Pro Extended Reasoning review..."
     print_dim "This may take 10-60 minutes depending on complexity."
-    echo ""
+    echo "" >&2
 
     if [[ "$manual_login" == "true" ]]; then
         print_warning "Manual login mode enabled"
         print_dim "Chrome will open - log into ChatGPT if prompted"
         print_dim "Your session will be saved for future runs"
-        echo ""
+        echo "" >&2
     fi
 
     if [[ "$wait_mode" == "true" ]]; then
         print_info "Running in foreground (--wait)..."
-        echo ""
+        echo "" >&2
         $ORACLE_CMD "${oracle_args[@]}"
-        echo ""
+        echo "" >&2
         print_success "Review complete!"
         print_info "Output saved to: $output_file"
     else
@@ -764,7 +754,7 @@ with the git-diff style change versus the original plan shown below:
         local oracle_pid=$!
 
         print_success "Oracle running in background (PID: $oracle_pid)"
-        echo ""
+        echo "" >&2
 
         if [[ "$GUM_AVAILABLE" == "true" ]]; then
             gum style \
@@ -775,28 +765,28 @@ with the git-diff style change versus the original plan shown below:
                 "" \
                 "Check status:      $(gum style --foreground 82 "apr status")" \
                 "Attach to session: $(gum style --foreground 82 "apr attach $slug")" \
-                "View with output:  $(gum style --foreground 82 "$ORACLE_CMD session $slug --render")"
+                "View with output:  $(gum style --foreground 82 "$ORACLE_CMD session $slug --render")" >&2
         else
-            echo -e "${CYAN}╭────────────────────────────────────────────────────────────╮${NC}"
-            echo -e "${CYAN}│${NC}  ${BOLD}MONITORING COMMANDS${NC}"
-            echo -e "${CYAN}├────────────────────────────────────────────────────────────┤${NC}"
-            echo -e "${CYAN}│${NC}  Check status:      ${GREEN}apr status${NC}"
-            echo -e "${CYAN}│${NC}  Attach to session: ${GREEN}apr attach $slug${NC}"
-            echo -e "${CYAN}│${NC}  View with output:  ${GREEN}$ORACLE_CMD session $slug --render${NC}"
-            echo -e "${CYAN}╰────────────────────────────────────────────────────────────╯${NC}"
+            echo -e "${CYAN}╭────────────────────────────────────────────────────────────╮${NC}" >&2
+            echo -e "${CYAN}│${NC}  ${BOLD}MONITORING COMMANDS${NC}" >&2
+            echo -e "${CYAN}├────────────────────────────────────────────────────────────┤${NC}" >&2
+            echo -e "${CYAN}│${NC}  Check status:      ${GREEN}apr status${NC}" >&2
+            echo -e "${CYAN}│${NC}  Attach to session: ${GREEN}apr attach $slug${NC}" >&2
+            echo -e "${CYAN}│${NC}  View with output:  ${GREEN}$ORACLE_CMD session $slug --render${NC}" >&2
+            echo -e "${CYAN}╰────────────────────────────────────────────────────────────╯${NC}" >&2
         fi
 
-        echo ""
+        echo "" >&2
         print_info "Output will be saved to: $output_file"
     fi
 
-    echo ""
+    echo "" >&2
     print_header "NEXT STEPS AFTER REVIEW COMPLETES"
-    echo "1. Review the output in $output_file"
-    echo "2. Integrate feedback into your specification"
-    echo "3. Update README to reflect changes"
-    echo "4. Harmonize implementation doc (if applicable)"
-    echo "5. Commit and push"
+    echo "1. Review the output in $output_file" >&2
+    echo "2. Integrate feedback into your specification" >&2
+    echo "3. Update README to reflect changes" >&2
+    echo "4. Harmonize implementation doc (if applicable)" >&2
+    echo "5. Commit and push" >&2
 }
 
 # -----------------------------------------------------------------------------
@@ -806,7 +796,7 @@ with the git-diff style change versus the original plan shown below:
 show_status() {
     print_banner
     print_header "ORACLE SESSION STATUS"
-    echo ""
+    echo "" >&2
     $ORACLE_CMD status --hours 72
 }
 
@@ -814,7 +804,7 @@ attach_session() {
     local session="$1"
     print_banner
     print_info "Attaching to session: $session"
-    echo ""
+    echo "" >&2
     $ORACLE_CMD session "$session" --render
 }
 
@@ -825,7 +815,7 @@ attach_session() {
 list_workflows() {
     print_banner
     print_header "CONFIGURED WORKFLOWS"
-    echo ""
+    echo "" >&2
 
     local workflow_dir="$CONFIG_DIR/workflows"
     if [[ ! -d "$workflow_dir" ]]; then
@@ -841,13 +831,13 @@ list_workflows() {
         desc=$(get_config_value "description" "$config")
 
         if [[ "$GUM_AVAILABLE" == "true" ]]; then
-            gum style --foreground 82 --bold "$name"
-            gum style --faint "  $desc"
+            gum style --foreground 82 --bold "$name" >&2
+            gum style --faint "  $desc" >&2
         else
-            echo -e "  ${GREEN}${BOLD}$name${NC}"
-            echo -e "    ${DIM}$desc${NC}"
+            echo -e "  ${GREEN}${BOLD}$name${NC}" >&2
+            echo -e "    ${DIM}$desc${NC}" >&2
         fi
-        echo ""
+        echo "" >&2
     done
 }
 
@@ -859,7 +849,7 @@ show_history() {
     local workflow="${WORKFLOW:-default}"
     print_banner
     print_header "REVISION HISTORY: $workflow"
-    echo ""
+    echo "" >&2
 
     local rounds_dir="$CONFIG_DIR/rounds/$workflow"
     if [[ ! -d "$rounds_dir" ]]; then
@@ -872,9 +862,9 @@ show_history() {
         local round_num size date
         round_num=$(basename "$round_file" .md | sed 's/round_//')
         size=$(du -h "$round_file" | cut -f1)
-        date=$(stat -c %y "$round_file" 2>/dev/null || stat -f %Sm "$round_file" 2>/dev/null)
+        date=$(stat -c %y "$round_file" 2>/dev/null || stat -f %Sm "$round_file" 2>/dev/null || echo "unknown")
 
-        echo -e "  ${CYAN}Round $round_num${NC}  ${DIM}$size${NC}  ${DIM}$date${NC}"
+        echo -e "  ${CYAN}Round $round_num${NC}  ${DIM}$size${NC}  ${DIM}$date${NC}" >&2
     done
 }
 
@@ -887,77 +877,77 @@ show_help() {
     print_banner
 
     if [[ "$GUM_AVAILABLE" == "true" ]]; then
-        gum style --foreground 214 --bold "SYNOPSIS"
-        echo "  apr [command] [options]"
-        echo ""
+        gum style --foreground 214 --bold "SYNOPSIS" >&2
+        echo "  apr [command] [options]" >&2
+        echo "" >&2
 
-        gum style --foreground 214 --bold "COMMANDS"
-        echo "  $(gum style --foreground 82 'run <round>')        Run a revision round"
-        echo "  $(gum style --foreground 82 'setup')              Interactive workflow setup wizard"
-        echo "  $(gum style --foreground 82 'status')             Check Oracle session status"
-        echo "  $(gum style --foreground 82 'attach <session>')   Attach to running/completed session"
-        echo "  $(gum style --foreground 82 'list')               List configured workflows"
-        echo "  $(gum style --foreground 82 'history')            Show revision history"
-        echo "  $(gum style --foreground 82 'help')               Show this help message"
-        echo ""
+        gum style --foreground 214 --bold "COMMANDS" >&2
+        echo "  $(gum style --foreground 82 'run <round>')        Run a revision round" >&2
+        echo "  $(gum style --foreground 82 'setup')              Interactive workflow setup wizard" >&2
+        echo "  $(gum style --foreground 82 'status')             Check Oracle session status" >&2
+        echo "  $(gum style --foreground 82 'attach <session>')   Attach to running/completed session" >&2
+        echo "  $(gum style --foreground 82 'list')               List configured workflows" >&2
+        echo "  $(gum style --foreground 82 'history')            Show revision history" >&2
+        echo "  $(gum style --foreground 82 'help')               Show this help message" >&2
+        echo "" >&2
 
-        gum style --foreground 214 --bold "OPTIONS"
-        gum style --faint "  -w, --workflow NAME  Workflow to use (default: from config)"
-        gum style --faint "  -i, --include-impl   Include implementation document"
-        gum style --faint "  -d, --dry-run        Preview without sending to GPT Pro"
-        gum style --faint "  -r, --render         Render bundle for manual paste"
-        gum style --faint "  -c, --copy           Copy rendered bundle to clipboard"
-        gum style --faint "  --wait               Wait for completion (blocking)"
-        gum style --faint "  --login              Manual login mode (first-time setup)"
-        gum style --faint "  --keep-browser       Keep browser open after completion"
-        gum style --faint "  --version            Show version"
-        echo ""
+        gum style --foreground 214 --bold "OPTIONS" >&2
+        gum style --faint "  -w, --workflow NAME  Workflow to use (default: from config)" >&2
+        gum style --faint "  -i, --include-impl   Include implementation document" >&2
+        gum style --faint "  -d, --dry-run        Preview without sending to GPT Pro" >&2
+        gum style --faint "  -r, --render         Render bundle for manual paste" >&2
+        gum style --faint "  -c, --copy           Copy rendered bundle to clipboard" >&2
+        gum style --faint "  --wait               Wait for completion (blocking)" >&2
+        gum style --faint "  --login              Manual login mode (first-time setup)" >&2
+        gum style --faint "  --keep-browser       Keep browser open after completion" >&2
+        gum style --faint "  --version            Show version" >&2
+        echo "" >&2
 
-        gum style --foreground 214 --bold "EXAMPLES"
-        gum style --foreground 39 "  # First-time setup"
-        echo "  apr setup"
-        echo ""
-        gum style --foreground 39 "  # Run revision round 1"
-        echo "  apr run 1"
-        echo ""
-        gum style --foreground 39 "  # Run with implementation doc"
-        echo "  apr run 2 --include-impl"
-        echo ""
-        gum style --foreground 39 "  # First run with manual login"
-        echo "  apr run 1 --login --wait"
-        echo ""
-        gum style --foreground 39 "  # Check session status"
-        echo "  apr status"
+        gum style --foreground 214 --bold "EXAMPLES" >&2
+        gum style --foreground 39 "  # First-time setup" >&2
+        echo "  apr setup" >&2
+        echo "" >&2
+        gum style --foreground 39 "  # Run revision round 1" >&2
+        echo "  apr run 1" >&2
+        echo "" >&2
+        gum style --foreground 39 "  # Run with implementation doc" >&2
+        echo "  apr run 2 --include-impl" >&2
+        echo "" >&2
+        gum style --foreground 39 "  # First run with manual login" >&2
+        echo "  apr run 1 --login --wait" >&2
+        echo "" >&2
+        gum style --foreground 39 "  # Check session status" >&2
+        echo "  apr status" >&2
     else
-        echo -e "${BOLD}${YELLOW}SYNOPSIS${NC}"
-        echo "  apr [command] [options]"
-        echo ""
-        echo -e "${BOLD}${YELLOW}COMMANDS${NC}"
-        echo -e "  ${GREEN}run <round>${NC}        Run a revision round"
-        echo -e "  ${GREEN}setup${NC}              Interactive workflow setup wizard"
-        echo -e "  ${GREEN}status${NC}             Check Oracle session status"
-        echo -e "  ${GREEN}attach <session>${NC}   Attach to running/completed session"
-        echo -e "  ${GREEN}list${NC}               List configured workflows"
-        echo -e "  ${GREEN}history${NC}            Show revision history"
-        echo -e "  ${GREEN}help${NC}               Show this help message"
-        echo ""
-        echo -e "${BOLD}${YELLOW}OPTIONS${NC}"
-        echo "  -w, --workflow NAME  Workflow to use (default: from config)"
-        echo "  -i, --include-impl   Include implementation document"
-        echo "  -d, --dry-run        Preview without sending to GPT Pro"
-        echo "  -r, --render         Render bundle for manual paste"
-        echo "  -c, --copy           Copy rendered bundle to clipboard"
-        echo "  --wait               Wait for completion (blocking)"
-        echo "  --login              Manual login mode (first-time setup)"
-        echo "  --keep-browser       Keep browser open after completion"
-        echo "  --version            Show version"
-        echo ""
-        echo -e "${BOLD}${YELLOW}EXAMPLES${NC}"
-        echo "  apr setup                    # First-time setup"
-        echo "  apr run 1                    # Run revision round 1"
-        echo "  apr run 2 --include-impl     # Include implementation doc"
-        echo "  apr run 1 --login --wait     # First run with manual login"
-        echo "  apr status                   # Check session status"
+        echo -e "${BOLD}${YELLOW}SYNOPSIS${NC}" >&2
+        echo "  apr [command] [options]" >&2
+        echo "" >&2
+        echo -e "${BOLD}${YELLOW}COMMANDS${NC}" >&2
+        echo -e "  ${GREEN}run <round>${NC}        Run a revision round" >&2
+        echo -e "  ${GREEN}setup${NC}              Interactive workflow setup wizard" >&2
+        echo -e "  ${GREEN}status${NC}             Check Oracle session status" >&2
+        echo -e "  ${GREEN}attach <session>${NC}   Attach to running/completed session" >&2
+        echo -e "  ${GREEN}list${NC}               List configured workflows" >&2
+        echo -e "  ${GREEN}history${NC}            Show revision history" >&2
+        echo -e "  ${GREEN}help${NC}               Show this help message" >&2
+        echo "" >&2
+        echo -e "${BOLD}${YELLOW}OPTIONS${NC}" >&2
+        echo "  -w, --workflow NAME  Workflow to use (default: from config)" >&2
+        echo "  -i, --include-impl   Include implementation document" >&2
+        echo "  -d, --dry-run        Preview without sending to GPT Pro" >&2
+        echo "  -r, --render         Render bundle for manual paste" >&2
+        echo "  -c, --copy           Copy rendered bundle to clipboard" >&2
+        echo "  --wait               Wait for completion (blocking)" >&2
+        echo "  --login              Manual login mode (first-time setup)" >&2
+        echo "  --keep-browser       Keep browser open after completion" >&2
+        echo "  --version            Show version" >&2
+        echo "" >&2
+        echo -e "${BOLD}${YELLOW}EXAMPLES${NC}" >&2
+        echo "  apr setup                    # First-time setup" >&2
+        echo "  apr run 1                    # Run revision round 1" >&2
+        echo "  apr run 2 --include-impl     # Include implementation doc" >&2
+        echo "  apr run 1 --login --wait     # First run with manual login" >&2
+        echo "  apr status                   # Check session status" >&2
     fi
 }
 
@@ -1002,7 +992,6 @@ main() {
     WAIT_MODE=false
     MANUAL_LOGIN=false
     KEEP_BROWSER=false
-    VERBOSE=false
 
     local positional_args=()
 
@@ -1038,10 +1027,6 @@ main() {
                 ;;
             --keep-browser)
                 KEEP_BROWSER=true
-                shift
-                ;;
-            -v|--verbose)
-                VERBOSE=true
                 shift
                 ;;
             --version)

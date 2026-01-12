@@ -32,10 +32,10 @@ REPO_NAME="automated_plan_reviser_pro"
 REPO_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main"
 SCRIPT_NAME="apr"
 
-log_info() { echo -e "${GREEN}[apr]${NC} $1"; }
-log_warn() { echo -e "${YELLOW}[apr]${NC} $1"; }
-log_error() { echo -e "${RED}[apr]${NC} $1"; }
-log_step() { echo -e "${BLUE}[apr]${NC} $1"; }
+log_info() { echo -e "${GREEN}[apr]${NC} $1" >&2; }
+log_warn() { echo -e "${YELLOW}[apr]${NC} $1" >&2; }
+log_error() { echo -e "${RED}[apr]${NC} $1" >&2; }
+log_step() { echo -e "${BLUE}[apr]${NC} $1" >&2; }
 
 download_file() {
     local url="$1"
@@ -212,12 +212,12 @@ install_oracle() {
 }
 
 main() {
-    echo ""
-    echo -e "${BOLD}${MAGENTA}╔════════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BOLD}${MAGENTA}║${NC}  ${BOLD}  Automated Plan Reviser Pro${NC}                                ${BOLD}${MAGENTA}║${NC}"
-    echo -e "${BOLD}${MAGENTA}║${NC}  ${DIM}Iterative AI-Powered Spec Refinement${NC}                         ${BOLD}${MAGENTA}║${NC}"
-    echo -e "${BOLD}${MAGENTA}╚════════════════════════════════════════════════════════════════╝${NC}"
-    echo ""
+    echo "" >&2
+    echo -e "${BOLD}${MAGENTA}╔════════════════════════════════════════════════════════════════╗${NC}" >&2
+    echo -e "${BOLD}${MAGENTA}║${NC}  ${BOLD}  Automated Plan Reviser Pro${NC}                                ${BOLD}${MAGENTA}║${NC}" >&2
+    echo -e "${BOLD}${MAGENTA}║${NC}  ${DIM}Iterative AI-Powered Spec Refinement${NC}                         ${BOLD}${MAGENTA}║${NC}" >&2
+    echo -e "${BOLD}${MAGENTA}╚════════════════════════════════════════════════════════════════╝${NC}" >&2
+    echo "" >&2
 
     local install_dir shell_config
     install_dir=$(get_install_dir)
@@ -265,7 +265,7 @@ main() {
 
     # Install dependencies (unless disabled)
     if [[ -z "${APR_NO_DEPS:-}" ]]; then
-        echo ""
+        echo "" >&2
         log_step "Installing dependencies..."
         install_gum || true
         install_oracle || true
@@ -273,34 +273,34 @@ main() {
 
     # Verify installation
     if [[ -x "$script_path" ]]; then
-        echo ""
+        echo "" >&2
         log_info "Installation complete!"
-        echo ""
-        echo -e "${BOLD}What APR Does:${NC}"
-        echo -e "  ${GREEN}1.${NC} Bundle your docs (README, spec, implementation)"
-        echo -e "  ${GREEN}2.${NC} Send to GPT Pro 5.2 with Extended Reasoning"
-        echo -e "  ${GREEN}3.${NC} Capture detailed revision suggestions"
-        echo -e "  ${GREEN}4.${NC} Track multiple rounds of refinement"
-        echo ""
-        echo -e "${BOLD}Quick Start:${NC}"
-        echo ""
+        echo "" >&2
+        echo -e "${BOLD}What APR Does:${NC}" >&2
+        echo -e "  ${GREEN}1.${NC} Bundle your docs (README, spec, implementation)" >&2
+        echo -e "  ${GREEN}2.${NC} Send to GPT Pro 5.2 with Extended Reasoning" >&2
+        echo -e "  ${GREEN}3.${NC} Capture detailed revision suggestions" >&2
+        echo -e "  ${GREEN}4.${NC} Track multiple rounds of refinement" >&2
+        echo "" >&2
+        echo -e "${BOLD}Quick Start:${NC}" >&2
+        echo "" >&2
 
         if [[ ":$PATH:" != *":${install_dir}:"* ]]; then
-            echo -e "  ${BOLD}1. Reload your shell:${NC}"
-            echo -e "     source ${shell_config}"
-            echo ""
-            echo -e "  ${BOLD}2. Run the setup wizard:${NC}"
+            echo -e "  ${BOLD}1. Reload your shell:${NC}" >&2
+            echo -e "     source ${shell_config}" >&2
+            echo "" >&2
+            echo -e "  ${BOLD}2. Run the setup wizard:${NC}" >&2
         else
-            echo -e "  ${BOLD}Run the setup wizard:${NC}"
+            echo -e "  ${BOLD}Run the setup wizard:${NC}" >&2
         fi
 
-        echo -e "     ${CYAN}apr setup${NC}"
-        echo ""
-        echo -e "  ${BOLD}Then start your first revision:${NC}"
-        echo -e "     ${CYAN}apr run 1${NC}"
-        echo ""
-        echo -e "${YELLOW}First run will require ChatGPT login via browser${NC}"
-        echo ""
+        echo -e "     ${CYAN}apr setup${NC}" >&2
+        echo "" >&2
+        echo -e "  ${BOLD}Then start your first revision:${NC}" >&2
+        echo -e "     ${CYAN}apr run 1${NC}" >&2
+        echo "" >&2
+        echo -e "${YELLOW}First run will require ChatGPT login via browser${NC}" >&2
+        echo "" >&2
     else
         log_error "Installation failed - script not executable"
         exit 1
