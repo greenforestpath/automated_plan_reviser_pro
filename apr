@@ -3711,6 +3711,154 @@ show_stats() {
     fi
 }
 
+# -----------------------------------------------------------------------------
+# Dashboard (Interactive Analytics)
+# -----------------------------------------------------------------------------
+
+dashboard_clear() {
+    if [[ -t 2 ]]; then
+        printf '\033[2J\033[H' >&2
+    fi
+}
+
+dashboard_round_list() {
+    local workflow="$1"
+    local rounds=()
+
+    if command -v jq &>/dev/null; then
+        local metrics=""
+        metrics=$(metrics_read "$workflow" 2>/dev/null || echo "")
+        if [[ -n "$metrics" ]]; then
+            mapfile -t rounds < <(echo "$metrics" | jq -r '.rounds | sort_by(.round) | .[].round' 2>/dev/null || true)
+        fi
+    fi
+
+    if [[ ${#rounds[@]} -eq 0 ]]; then
+        local rounds_dir="$CONFIG_DIR/rounds/$workflow"
+        if [[ -d "$rounds_dir" ]]; then
+            local round_file round_num
+            for round_file in "$rounds_dir"/round_*.md; do
+                [[ -f "$round_file" ]] || continue
+                round_num=$(basename "$round_file" .md | sed 's/round_//')
+                if [[ "$round_num" =~ ^[0-9]+$ ]]; then
+                    rounds+=("$round_num")
+                fi
+            done
+            if [[ ${#rounds[@]} -gt 0 ]]; then
+                mapfile -t rounds < <(printf '%s\n' "${rounds[@]}" | sort -n -u)
+            fi
+        fi
+    fi
+
+    printf '%s\n' "${rounds[@]}"
+}
+
+dashboard_select_round() {
+    local workflow="$1"
+    local prompt="${2:-Select round}"
+    local rounds=()
+    mapfile -t rounds < <(dashboard_round_list "$workflow")
+
+    if [[ ${#rounds[@]} -eq 0 ]]; then
+        print_warning "No rounds found for workflow '$workflow'"
+        return 1
+    fi
+
+    local choice=""
+    if [[ "$GUM_AVAILABLE" == "true" && -t 2 ]]; then
+        choice=$(printf '%s\n' "${rounds[@]}" | gum choose --header "$prompt")
+    else
+        echo "Available rounds: ${rounds[*]}" >&2
+        read -rp "$prompt: " choice
+    fi
+
+    if [[ -z "$choice" ]]; then
+        return 1
+    fi
+
+    printf '%s\n' "$choice"
+}
+
+dashboard_select_action() {
+    local action=""
+    if [[ "$GUM_AVAILABLE" == "true" && -t 2 ]]; then
+        action=$(printf '%s\n' "View round" "Diff with previous" "Refresh" "Quit" | gum choose --header "Dashboard actions")
+    else
+        echo "Actions: [v]iew round, [d]iff with previous, [r]efresh, [q]uit" >&2
+        read -rp "Choose action: " action
+        case "${action,,}" in
+            v|view) action="View round" ;;
+            d|diff) action="Diff with previous" ;;
+            r|refresh) action="Refresh" ;;
+            q|quit) action="Quit" ;;
+            *) action="" ;;
+        esac
+    fi
+
+    if [[ -z "$action" ]]; then
+        print_warning "Unknown selection"
+        return 1
+    fi
+
+    printf '%s\n' "$action"
+}
+
+show_dashboard() {
+    local workflow="${WORKFLOW:-default}"
+
+    local workflow_file="$CONFIG_DIR/workflows/${workflow}.yaml"
+    if [[ ! -f "$workflow_file" ]]; then
+        print_error "Workflow '$workflow' not found"
+        print_info "Run 'apr list' to see available workflows"
+        exit $EXIT_CONFIG_ERROR
+    fi
+
+    if [[ ! -t 2 ]]; then
+        print_error "Dashboard requires an interactive terminal"
+        print_info "Use 'apr stats' for non-interactive output"
+        exit $EXIT_USAGE_ERROR
+    fi
+
+    check_gum || true
+
+    if ! command -v jq &>/dev/null; then
+        print_error "jq not available; dashboard requires jq"
+        print_info "Install jq or use 'apr stats' for basic output"
+        exit $EXIT_DEPENDENCY_ERROR
+    fi
+
+    while true; do
+        dashboard_clear
+        if ! show_stats_full "$workflow"; then
+            print_warning "Unable to load analytics data"
+            print_info "Try 'apr backfill' or run more rounds"
+        fi
+
+        echo "" >&2
+        print_header "DASHBOARD ACTIONS"
+        local action
+        action=$(dashboard_select_action) || continue
+
+        case "$action" in
+            "View round")
+                local round
+                round=$(dashboard_select_round "$workflow" "Select round to view") || continue
+                show_round "$round"
+                ;;
+            "Diff with previous")
+                local round
+                round=$(dashboard_select_round "$workflow" "Select round to diff") || continue
+                diff_rounds "$round"
+                ;;
+            "Refresh")
+                ;;
+            "Quit")
+                break
+                ;;
+        esac
+    done
+}
+
 # ---------------------------------------------------------------------------
 # Backfill Metrics for Existing Rounds (fzi.9)
 # ---------------------------------------------------------------------------
@@ -4720,6 +4868,7 @@ show_help() {
         echo "    $(gum style --foreground 82 'diff <N> [M]')       Compare round outputs (N vs M or N vs N-1)" >&2
         echo "    $(gum style --foreground 82 'integrate <round>')  Generate Claude Code integration prompt" >&2
         echo "    $(gum style --foreground 82 'stats')              Show round analytics & convergence signals" >&2
+        echo "    $(gum style --foreground 82 'dashboard')          Interactive analytics dashboard" >&2
         echo "" >&2
         gum style --foreground 39 "  Automation" >&2
         echo "    $(gum style --foreground 82 'robot')              Machine-friendly CLI for coding agents" >&2
@@ -4826,6 +4975,7 @@ show_help() {
         echo -e "    ${GREEN}diff <N> [M]${NC}       Compare round outputs (N vs M or N vs N-1)" >&2
         echo -e "    ${GREEN}integrate <round>${NC}  Generate Claude Code integration prompt" >&2
         echo -e "    ${GREEN}stats${NC}              Show round analytics & convergence signals" >&2
+        echo -e "    ${GREEN}dashboard${NC}          Interactive analytics dashboard" >&2
         echo "" >&2
         echo -e "  ${CYAN}Automation${NC}" >&2
         echo -e "    ${GREEN}robot${NC}              Machine-friendly CLI for coding agents" >&2
@@ -5223,6 +5373,9 @@ main() {
             ;;
         stats)
             show_stats
+            ;;
+        dashboard)
+            show_dashboard
             ;;
         backfill)
             cmd_backfill "${positional_args[@]}"

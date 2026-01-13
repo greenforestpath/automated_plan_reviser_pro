@@ -15,6 +15,7 @@ setup() {
     log_test_start "${BATS_TEST_NAME}"
 
     cd "$TEST_PROJECT"
+    setup_mock_oracle
 }
 
 teardown() {
@@ -89,6 +90,10 @@ EOF
 
 @test "e2e: complete round lifecycle" {
     setup_test_workflow "default"
+
+    run "$APR_SCRIPT" run 1 --dry-run
+    assert_success
+    [[ ! -f ".apr/rounds/default/round_1.md" ]]
 
     # Round 1: First revision
     create_mock_round 1 "default" "# Round 1 Analysis
