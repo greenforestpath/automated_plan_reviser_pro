@@ -3895,7 +3895,7 @@ dashboard_build_rounds() {
 dashboard_render_header() {
     local workflow="$1"
     printf "%sAPR Analytics Dashboard%s - workflow: %s\n" "${BOLD}" "${NC}" "$workflow" >&2
-    printf "Press 'q' to quit, '?' for help, 'r' to refresh\n" >&2
+    printf "Press 'q' to quit, '?/h' for help, 'r' to refresh\n" >&2
     printf "────────────────────────────────────────────────────────────────────────\n" >&2
 }
 
@@ -4049,7 +4049,7 @@ dashboard_show_help() {
     printf "  Enter  Show selected round details\n" >&2
     printf "  d      Diff selected round with previous\n" >&2
     printf "  r      Refresh metrics\n" >&2
-    printf "  ?      Show this help\n" >&2
+    printf "  ?/h    Show this help\n" >&2
     printf "\nPress any key to return...\n" >&2
     read -rsn1 _ </dev/tty
 }

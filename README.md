@@ -29,7 +29,7 @@ curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/automated_plan_r
 
 ## TL;DR
 
-**The Problem**: Complex specifications—especially security-sensitive protocols—need multiple rounds of review. A single pass by even the best AI misses architectural issues, edge cases, and subtle flaws. Manually running 15-20 review cycles is tedious and error-prone.
+**The Problem**: Complex specifications, especially security-sensitive protocols, need multiple rounds of review. A single pass by even the best AI misses architectural issues, edge cases, and subtle flaws. Manually running 15-20 review cycles is tedious and error-prone.
 
 **The Solution**: apr automates iterative specification refinement using GPT Pro 5.2 Extended Reasoning via [Oracle](https://github.com/steipete/oracle). Each round builds on the last, converging toward optimal architecture like a numerical optimizer.
 
@@ -37,7 +37,7 @@ curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/automated_plan_r
 
 | Feature | What It Does |
 |---------|--------------|
-| **One-Command Iterations** | `apr run 5` kicks off round 5—no manual copy-paste |
+| **One-Command Iterations** | `apr run 5` kicks off round 5 without manual copy-paste |
 | **Document Bundling** | Automatically combines README, spec, and implementation docs |
 | **Background Processing** | 10-60 minute reviews run in background with notifications |
 | **Session Management** | Attach/detach from running sessions, check status anytime |
@@ -71,7 +71,7 @@ Round 8-12:  Nuanced optimizations, edge case handling
 Round 13+:   Polishing abstractions, converging on steady state
 ```
 
-Each round, GPT Pro focuses on finer details because major issues were already addressed—like gradient descent settling into a minimum.
+Each round, GPT Pro focuses on finer details because major issues were already addressed, similar to gradient descent settling into a minimum.
 
 ---
 
@@ -80,7 +80,7 @@ Each round, GPT Pro focuses on finer details because major issues were already a
 Include this in your AGENTS.md file for any projects where you want to have access to APR:
 
 ```markdown
-# APR (Automated Plan Reviser Pro) — Agent Reference
+# APR (Automated Plan Reviser Pro) - Agent Reference
 
 Iterative spec refinement via GPT Pro Extended Reasoning. Multi-round AI review
 with structured outputs for Claude Code integration.
@@ -135,7 +135,7 @@ apr robot validate 5 -w myspec | jq -e '.data.valid' || exit 1
 # 2. Run
 result=$(apr robot run 5 -w myspec -i)
 
-# 3. After completion — use integrate command or read file directly
+# 3. After completion, use integrate command or read file directly
 apr integrate 5 -w myspec --copy
 # File: .apr/rounds/myspec/round_5.md
 
@@ -631,10 +631,10 @@ apr diff 3 5 --tool delta
 ```
 
 The diff command intelligently selects the best available diff tool:
-1. **delta** — Beautiful syntax-highlighted diffs with line numbers
-2. **diff** — Standard UNIX diff as fallback
+1. **delta**: Beautiful syntax-highlighted diffs with line numbers
+2. **diff**: Standard UNIX diff as fallback
 
-**Why diff matters:** Seeing what changed between rounds reveals the convergence pattern. Early diffs show major structural changes; later diffs show increasingly subtle refinements—confirming you're approaching a stable design.
+**Why diffs help:** Seeing what changed between rounds reveals the convergence pattern. Early diffs show major structural changes; later diffs show increasingly subtle refinements, confirming you're approaching a stable design.
 
 ### Claude Code Integration (`apr integrate`)
 
@@ -662,7 +662,7 @@ The generated prompt:
 
 ## 📊 Convergence Analytics
 
-APR doesn't just run rounds—it tracks metrics over time to detect when your specification is converging toward a stable design. This transforms subjective "are we done yet?" into quantifiable signals.
+APR tracks metrics over time alongside running rounds, so you can see when your specification is converging toward a stable design. This turns the subjective "are we done yet?" into quantifiable signals.
 
 ### The Stats Command
 
@@ -898,10 +898,10 @@ APR's human-friendly terminal output is beautiful for interactive use, but codin
 
 The iterative refinement workflow APR enables is exactly the kind of repetitive, multi-step process that benefits from automation. A coding agent like Claude Code can:
 
-1. **Validate before running** — Check that all preconditions are met before kicking off an expensive 30-minute GPT Pro review
-2. **Run rounds programmatically** — Execute `apr robot run 5` and parse the structured response
-3. **Monitor progress** — Query status and workflow information in a parseable format
-4. **Handle errors gracefully** — Semantic error codes and structured error messages enable intelligent retry logic
+1. **Validate before running**: Check that all preconditions are met before kicking off an expensive 30-minute GPT Pro review
+2. **Run rounds programmatically**: Execute `apr robot run 5` and parse the structured response
+3. **Monitor progress**: Query status and workflow information in a parseable format
+4. **Handle errors gracefully**: Semantic error codes and structured error messages enable intelligent retry logic
 
 ### Response Format
 
@@ -982,7 +982,7 @@ apr robot workflows
 
 #### `apr robot init`
 
-Initializes the `.apr/` directory structure. Idempotent—safe to call multiple times:
+Initializes the `.apr/` directory structure. It is idempotent and safe to call multiple times:
 
 ```bash
 apr robot init
@@ -1001,7 +1001,7 @@ apr robot init
 
 #### `apr robot validate <round>`
 
-Pre-flight validation before running a round. This is the key command for automation—it checks all preconditions without actually running anything:
+Pre-flight validation before running a round. This is the key command for automation; it checks all preconditions without actually running anything:
 
 ```bash
 apr robot validate 5 --workflow fcp-spec
@@ -1076,7 +1076,7 @@ The `slug` can be used with `apr attach` to monitor the session. The `output_fil
 
 #### `apr robot help`
 
-Returns complete API documentation in JSON format—useful for coding agents to discover capabilities:
+Returns complete API documentation in JSON format, useful for coding agents to discover capabilities:
 
 ```bash
 apr robot help
@@ -1123,11 +1123,11 @@ echo "Output will be at: $output_file"
 
 Robot mode follows these principles:
 
-1. **Semantic error codes** — Machine-parseable error types enable intelligent error handling, not just string matching
-2. **Pre-flight validation** — Expensive Oracle runs (10-60 minutes) shouldn't fail due to missing files; validate first
-3. **Consistent envelope** — Every response has the same structure, making parsing trivial
-4. **Self-documenting** — The `help` command returns structured documentation
-5. **Minimal dependencies** — Only requires `jq` for JSON output formatting
+1. **Semantic error codes**: Machine-parseable error types enable intelligent error handling, not just string matching
+2. **Pre-flight validation**: Expensive Oracle runs (10-60 minutes) shouldn't fail due to missing files; validate first
+3. **Consistent envelope**: Every response has the same structure, making parsing trivial
+4. **Self-documenting**: The `help` command returns structured documentation
+5. **Minimal dependencies**: Only requires `jq` for JSON output formatting
 
 ---
 
@@ -1148,7 +1148,7 @@ The update command:
 3. **Shows what's available** and asks for confirmation
 4. **Downloads the new version** to a temporary location
 5. **Verifies the download** with multiple security checks
-6. **Installs atomically** — the old version is only replaced after verification succeeds
+6. **Installs atomically**: the old version is only replaced after verification succeeds
 
 ### Security Features
 
@@ -1191,10 +1191,10 @@ With this enabled, APR checks for updates once per day (tracked in `~/.local/sha
 
 APR is a rapidly evolving tool. New features, bug fixes, and improvements are released frequently. Self-update ensures:
 
-1. **Low friction** — No need to re-run the installer or remember download URLs
-2. **Security** — Checksum verification prevents tampering
-3. **Reliability** — Atomic updates mean no corrupted installations
-4. **User control** — Updates are never automatic; you always confirm
+1. **Low friction**: No need to re-run the installer or remember download URLs
+2. **Security**: Checksum verification prevents tampering
+3. **Reliability**: Atomic updates mean no corrupted installations
+4. **User control**: Updates are never automatic; you always confirm
 
 ---
 
@@ -1334,15 +1334,15 @@ APR serves two audiences with the same codebase:
 - **Humans** get beautiful gum-styled output, interactive wizards, and progress indicators
 - **Machines** get structured JSON via robot mode, semantic error codes, and pre-flight validation
 
-This isn't just about having two output formats—it's about recognizing that iterative refinement workflows benefit immensely from automation, and a tool that only works interactively leaves value on the table.
+Two output formats exist because iterative refinement workflows benefit from automation; a tool that only works interactively leaves value on the table.
 
 ### 6. Secure by Default
 
 Security considerations are woven throughout:
-- **No credential storage** — APR never touches your ChatGPT credentials; Oracle uses browser cookies
-- **Checksum verification** — Downloads are verified against published SHA-256 checksums
-- **Atomic operations** — Updates either complete fully or don't happen at all
-- **User consent** — Nothing destructive happens without explicit confirmation
+- **No credential storage**: APR never touches your ChatGPT credentials; Oracle uses browser cookies
+- **Checksum verification**: Downloads are verified against published SHA-256 checksums
+- **Atomic operations**: Updates either complete fully or don't happen at all
+- **User consent**: Nothing destructive happens without explicit confirmation
 
 ---
 
@@ -1466,11 +1466,11 @@ bats --verbose-run tests/
 
 ### Key Testing Principles
 
-1. **No Oracle dependency** — Tests use mocked Oracle responses to run quickly and offline
-2. **Isolated environments** — Each test creates a fresh project directory in `/tmp`
-3. **Semantic exit codes** — Tests verify that specific error conditions produce specific exit codes
-4. **Stream separation** — Tests validate that JSON goes to stdout, errors to stderr
-5. **Robot mode coverage** — Full JSON API contract validation
+1. **No Oracle dependency**: Tests use mocked Oracle responses to run quickly and offline
+2. **Isolated environments**: Each test creates a fresh project directory in `/tmp`
+3. **Semantic exit codes**: Tests verify that specific error conditions produce specific exit codes
+4. **Stream separation**: Tests validate that JSON goes to stdout, errors to stderr
+5. **Robot mode coverage**: Full JSON API contract validation
 
 ### Custom Assertions
 
