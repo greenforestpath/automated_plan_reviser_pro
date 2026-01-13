@@ -3010,6 +3010,42 @@ format_bytes() {
     fi
 }
 
+format_iso_date() {
+    local iso="$1"
+    if [[ -z "$iso" || "$iso" == "null" ]]; then
+        echo "N/A"
+        return 0
+    fi
+
+    local formatted
+    formatted=$(date -d "$iso" '+%Y-%m-%d' 2>/dev/null || true)
+    if [[ -n "$formatted" ]]; then
+        echo "$formatted"
+        return 0
+    fi
+
+    formatted=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$iso" '+%Y-%m-%d' 2>/dev/null || true)
+    if [[ -n "$formatted" ]]; then
+        echo "$formatted"
+        return 0
+    fi
+
+    echo "${iso%%T*}"
+}
+
+format_float() {
+    local value="$1"
+    if [[ -z "$value" || "$value" == "null" ]]; then
+        echo "-"
+        return 0
+    fi
+    if [[ "$value" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+        printf "%.2f" "$value"
+    else
+        echo "-"
+    fi
+}
+
 safe_json_num() {
     local json="$1"
     local path="$2"
@@ -3105,9 +3141,12 @@ format_changes() {
 
     if [[ -z "$added" || "$added" == "null" ]]; then
         echo "-"
-    else
-        echo "+${added}-${deleted}"
+        return 0
     fi
+    if [[ -z "$deleted" || "$deleted" == "null" ]]; then
+        deleted="0"
+    fi
+    echo "+${added}-${deleted}"
 }
 
 show_stats_full() {
@@ -3178,6 +3217,13 @@ show_stats_full() {
 
     echo "" >&2
 
+    local backfilled
+    backfilled=$(echo "$metrics" | jq -r 'any(.rounds[]?; .backfilled == true)' 2>/dev/null || echo "false")
+    if [[ "$backfilled" == "true" ]]; then
+        print_dim "Note: Some rounds were backfilled (limited accuracy for structure metrics)"
+        echo "" >&2
+    fi
+
     local output_sizes=()
     mapfile -t output_sizes < <(echo "$metrics" | jq -r '.rounds | sort_by(.round) | .[].output.char_count // 0')
     local change_values=()
@@ -3213,14 +3259,13 @@ show_stats_full() {
         deleted=$(safe_json_num "$round_json" '.changes_from_previous.lines_deleted' "null")
         similarity=$(safe_json_num "$round_json" '.changes_from_previous.similarity_score' "null")
         ts=$(echo "$round_json" | jq -r '.timestamp // ""' 2>/dev/null || echo "")
-        date_only=${ts%%T*}
-        [[ -z "$date_only" || "$date_only" == "null" ]] && date_only="N/A"
+        date_only=$(format_iso_date "$ts")
 
         printf "  %-3s │ %-7s │ %-9s │ %-7s │ %-10s\n" \
             "$round_num" \
             "$(format_bytes "$output_size")" \
             "$(format_changes "$added" "$deleted")" \
-            "${similarity:-"-"}" \
+            "$(format_float "$similarity")" \
             "$date_only" >&2
     done < <(echo "$metrics" | jq -c '.rounds | sort_by(.round) | .[]')
 
