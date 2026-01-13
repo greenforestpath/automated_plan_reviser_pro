@@ -921,7 +921,7 @@ get_config_value() {
                     next
                 }
             }
-            if ($0 ~ /^[[:space:]]*[^#][^:]*:[[:space:]]*[|>][-+]?[[:space:]]*$/) {
+            if ($0 ~ /^[[:space:]]*[^#][^:]*:[[:space:]]*[|>][-+]?[[:space:]]*(#.*)?$/) {
                 block_indent = indent_len($0)
                 in_block = 1
                 next
@@ -930,6 +930,10 @@ get_config_value() {
                 line = $0
                 sub("^[[:space:]]*" key ":[[:space:]]*", "", line)
                 sub(/[[:space:]]*$/, "", line)
+                if (line !~ /^"/) {
+                    sub(/[[:space:]]+#.*$/, "", line)
+                    sub(/[[:space:]]*$/, "", line)
+                }
                 print line
                 exit
             }
@@ -943,6 +947,17 @@ yaml_quote() {
     value=${value//\\/\\\\}
     value=${value//\"/\\\"}
     printf '"%s"' "$value"
+}
+
+yaml_unquote() {
+    local value="$1"
+    if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+        value=${value#\"}
+        value=${value%\"}
+        value=${value//\\\"/\"}
+        value=${value//\\\\/\\}
+    fi
+    printf '%s' "$value"
 }
 
 # Extract a YAML block scalar (| or >) for a given key.
@@ -959,7 +974,7 @@ get_yaml_block() {
         }
         {
             if (!found) {
-                if ($0 ~ "^[[:space:]]*" key ":[[:space:]]*[|>][-+]?[[:space:]]*$") {
+                if ($0 ~ "^[[:space:]]*" key ":[[:space:]]*[|>][-+]?[[:space:]]*(#.*)?$") {
                     found = 1
                     next
                 }
@@ -1276,11 +1291,11 @@ run_round() {
 
     # Parse config (simple grep-based for now)
     local readme_path spec_path impl_path model output_dir
-    readme_path=$(get_config_value "readme" "$config_path" | tr -d '"')
-    spec_path=$(get_config_value "spec" "$config_path" | tr -d '"')
-    impl_path=$(get_config_value "implementation" "$config_path" | tr -d '"')
-    model=$(get_config_value "model" "$config_path" | tr -d '"')
-    output_dir=$(get_config_value "output_dir" "$config_path" | tr -d '"')
+    readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
+    spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
+    impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
+    model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
+    output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
 
     local config_errors=()
     [[ -z "$model" ]] && config_errors+=("Model not configured in workflow")
@@ -1638,7 +1653,7 @@ list_workflows() {
         found_any=true
         local name desc is_default=""
         name=$(basename "$config" .yaml)
-        desc=$(get_config_value "description" "$config")
+        desc=$(yaml_unquote "$(get_config_value "description" "$config")")
 
         if [[ "$name" == "$default_wf" ]]; then
             is_default=" (default)"
@@ -1896,7 +1911,7 @@ generate_integration() {
 
     # Get workflow config
     local spec_path
-    spec_path=$(get_config_value "spec" "$workflow_file" | tr -d '"')
+    spec_path=$(yaml_unquote "$(get_config_value "spec" "$workflow_file")")
     if [[ -z "$spec_path" ]]; then
         print_error "Spec path not configured in workflow '$workflow'"
         print_info "Check 'spec:' in $workflow_file"
@@ -2267,7 +2282,7 @@ robot_workflows() {
         [[ -f "$wf" ]] || continue
         local name desc
         name=$(basename "$wf" .yaml)
-        desc=$(get_config_value "description" "$wf" 2>/dev/null || echo "")
+        desc=$(yaml_unquote "$(get_config_value "description" "$wf" 2>/dev/null || echo "")")
         items+=("$(jq -nc --arg name "$name" --arg desc "$desc" '{name: $name, description: $desc}')")
     done
 
@@ -2322,10 +2337,10 @@ robot_validate() {
     else
         # Check required documents exist
         local readme spec model output_dir
-        readme=$(get_config_value "readme" "$wf_file" 2>/dev/null || echo "")
-        spec=$(get_config_value "spec" "$wf_file" 2>/dev/null || echo "")
-        model=$(get_config_value "model" "$wf_file" 2>/dev/null || echo "")
-        output_dir=$(get_config_value "output_dir" "$wf_file" 2>/dev/null || echo "")
+        readme=$(yaml_unquote "$(get_config_value "readme" "$wf_file" 2>/dev/null || echo "")")
+        spec=$(yaml_unquote "$(get_config_value "spec" "$wf_file" 2>/dev/null || echo "")")
+        model=$(yaml_unquote "$(get_config_value "model" "$wf_file" 2>/dev/null || echo "")")
+        output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$wf_file" 2>/dev/null || echo "")")
 
         if [[ -n "$readme" && ! -f "$readme" ]]; then
             errors+=("README not found: $readme")
@@ -2412,11 +2427,11 @@ robot_run() {
 
     # Parse config
     local readme_path spec_path impl_path model output_dir
-    readme_path=$(get_config_value "readme" "$config_path" | tr -d '"')
-    spec_path=$(get_config_value "spec" "$config_path" | tr -d '"')
-    impl_path=$(get_config_value "implementation" "$config_path" | tr -d '"')
-    model=$(get_config_value "model" "$config_path" | tr -d '"')
-    output_dir=$(get_config_value "output_dir" "$config_path" | tr -d '"')
+    readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
+    spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
+    impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
+    model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
+    output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
 
     # Validate required files
     if [[ ! -f "$readme_path" ]]; then
