@@ -4086,6 +4086,7 @@ show_help() {
         echo "    $(gum style --foreground 82 'list')               List configured workflows" >&2
         echo "    $(gum style --foreground 82 'history')            Show revision history" >&2
         echo "    $(gum style --foreground 82 'show <round>')       View round output" >&2
+        echo "    $(gum style --foreground 82 'backfill')           Generate metrics from existing rounds" >&2
         echo "    $(gum style --foreground 82 'update')             Check for and install updates" >&2
         echo "    $(gum style --foreground 82 'help')               Show this help message" >&2
         echo "" >&2
@@ -4113,6 +4114,8 @@ show_help() {
         gum style --faint "  --hours NUM          Status window in hours (default: 72)" >&2
         gum style --faint "  --detailed           Show detailed metrics in stats" >&2
         gum style --faint "  --json               Output stats as raw JSON" >&2
+        gum style --faint "  --all                Backfill all workflows" >&2
+        gum style --faint "  --force              Overwrite existing metrics" >&2
         gum style --faint "  -v, --verbose        Show detailed debug output" >&2
         gum style --faint "  -q, --quiet          Minimal output (errors only)" >&2
         gum style --faint "  --version            Show version" >&2
@@ -4186,6 +4189,7 @@ show_help() {
         echo -e "    ${GREEN}list${NC}               List configured workflows" >&2
         echo -e "    ${GREEN}history${NC}            Show revision history" >&2
         echo -e "    ${GREEN}show <round>${NC}       View round output" >&2
+        echo -e "    ${GREEN}backfill${NC}           Generate metrics from existing rounds" >&2
         echo -e "    ${GREEN}update${NC}             Check for and install updates" >&2
         echo -e "    ${GREEN}help${NC}               Show this help message" >&2
         echo "" >&2
@@ -4212,6 +4216,8 @@ show_help() {
         echo "  --hours NUM          Status window in hours (default: 72)" >&2
         echo "  --detailed           Show detailed metrics in stats" >&2
         echo "  --json               Output stats as raw JSON" >&2
+        echo "  --all                Backfill all workflows" >&2
+        echo "  --force              Overwrite existing metrics" >&2
         echo "  -v, --verbose        Show detailed debug output" >&2
         echo "  -q, --quiet          Minimal output (errors only)" >&2
         echo "  --version            Show version" >&2
@@ -4320,6 +4326,8 @@ main() {
     STATUS_HOURS="${APR_STATUS_HOURS:-72}"
     STATS_DETAILED=false
     STATS_JSON=false
+    BACKFILL_ALL=false
+    BACKFILL_FORCE=false
 
     local positional_args=()
 
@@ -4395,6 +4403,14 @@ main() {
                 ;;
             --json)
                 STATS_JSON=true
+                shift
+                ;;
+            --all)
+                BACKFILL_ALL=true
+                shift
+                ;;
+            --force)
+                BACKFILL_FORCE=true
                 shift
                 ;;
             -q|--quiet)
