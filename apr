@@ -1633,6 +1633,128 @@ collect_round_document_metrics() {
         }'
 }
 
+calculate_change_metrics() {
+    local old_file="$1"
+    local new_file="$2"
+
+    if ! command -v jq &>/dev/null; then
+        print_error "jq is required for analytics metrics"
+        return 1
+    fi
+
+    verbose "Calculating change metrics"
+    verbose "  Old: $old_file"
+    verbose "  New: $new_file"
+
+    if [[ ! -f "$old_file" ]]; then
+        verbose "Old file not found, returning null"
+        echo "null"
+        return 0
+    fi
+
+    if [[ ! -f "$new_file" ]]; then
+        verbose "New file not found, returning null"
+        echo "null"
+        return 0
+    fi
+
+    local start_ts end_ts elapsed_ms
+    start_ts=$(date +%s 2>/dev/null || echo 0)
+
+    if cmp -s "$old_file" "$new_file"; then
+        verbose "Files are identical (fast path)"
+        end_ts=$(date +%s 2>/dev/null || echo 0)
+        elapsed_ms=$(( (end_ts - start_ts) * 1000 ))
+        verbose "calculate_change_metrics completed in ${elapsed_ms}ms"
+        jq -nc '{
+            lines_added: 0,
+            lines_deleted: 0,
+            lines_modified: 0,
+            total_changes: 0,
+            diff_ratio: 0,
+            similarity_score: 1.0,
+            identical: true
+        }'
+        return 0
+    fi
+
+    verbose "Files differ, computing metrics..."
+
+    local diff_output lines_added lines_deleted total_changes
+    local total_lines diff_ratio similarity_score
+
+    diff_output=$(diff "$old_file" "$new_file" 2>/dev/null || true)
+    lines_added=$(echo "$diff_output" | grep -c '^>' 2>/dev/null || echo 0)
+    lines_deleted=$(echo "$diff_output" | grep -c '^<' 2>/dev/null || echo 0)
+    total_changes=$((lines_added + lines_deleted))
+
+    verbose "Diff counts: +$lines_added -$lines_deleted (total: $total_changes)"
+
+    total_lines=$(wc -l < "$new_file" | tr -d ' ')
+    diff_ratio=$(awk -v changes="$total_changes" -v total="$total_lines" \
+        'BEGIN { if (total > 0) printf "%.4f", changes / total; else printf "0" }')
+
+    verbose "Diff ratio: $diff_ratio ($total_changes / $total_lines)"
+
+    local common_lines total_unique
+    common_lines=$(comm -12 <(sort "$old_file") <(sort "$new_file") 2>/dev/null | wc -l | tr -d ' ')
+    total_unique=$(cat <(sort -u "$old_file") <(sort -u "$new_file") 2>/dev/null | sort -u | wc -l | tr -d ' ')
+
+    similarity_score=$(awk -v common="$common_lines" -v total="$total_unique" \
+        'BEGIN { if (total > 0) printf "%.4f", common / total; else printf "1.0" }')
+
+    verbose "Similarity: $similarity_score ($common_lines common / $total_unique unique)"
+
+    end_ts=$(date +%s 2>/dev/null || echo 0)
+    elapsed_ms=$(( (end_ts - start_ts) * 1000 ))
+    verbose "calculate_change_metrics completed in ${elapsed_ms}ms"
+
+    jq -nc \
+        --argjson lines_added "$lines_added" \
+        --argjson lines_deleted "$lines_deleted" \
+        --argjson total_changes "$total_changes" \
+        --argjson diff_ratio "$diff_ratio" \
+        --argjson similarity_score "$similarity_score" \
+        '{
+            lines_added: $lines_added,
+            lines_deleted: $lines_deleted,
+            lines_modified: 0,
+            total_changes: $total_changes,
+            diff_ratio: $diff_ratio,
+            similarity_score: $similarity_score,
+            identical: false
+        }'
+}
+
+calculate_round_changes() {
+    local workflow="$1"
+    local current_round="$2"
+
+    if ! command -v jq &>/dev/null; then
+        print_error "jq is required for analytics metrics"
+        return 1
+    fi
+
+    local prev_round=$((current_round - 1))
+
+    verbose "Calculating round changes: round $current_round vs round $prev_round"
+
+    if [[ $prev_round -lt 1 ]]; then
+        verbose "No previous round (current is round 1), returning null"
+        echo "null"
+        return 0
+    fi
+
+    local prev_output="$CONFIG_DIR/rounds/$workflow/round_${prev_round}.md"
+    local curr_output="$CONFIG_DIR/rounds/$workflow/round_${current_round}.md"
+
+    verbose "Comparing outputs:"
+    verbose "  Previous: $prev_output"
+    verbose "  Current:  $curr_output"
+
+    calculate_change_metrics "$prev_output" "$curr_output"
+}
+
 # ---------------------------------------------------------------------------
 # Inter-Round Change Analysis (fzi.4)
 # ---------------------------------------------------------------------------
@@ -2243,6 +2365,19 @@ run_round() {
                     }
 
                     if [[ -n "${round_record:-}" ]]; then
+                        local change_metrics
+                        change_metrics=$(calculate_round_changes "$workflow" "$round_num") || {
+                            print_warning "Failed to calculate change metrics"
+                            change_metrics="null"
+                        }
+
+                        if [[ -n "${change_metrics:-}" ]]; then
+                            round_record=$(echo "$round_record" | jq -c --argjson changes "$change_metrics" \
+                                '.changes_from_previous = $changes') || {
+                                print_warning "Failed to attach change metrics"
+                            }
+                        fi
+
                         if metrics_write_round "$workflow" "$round_num" "$round_record"; then
                             verbose "Metrics written for round $round_num"
                         else
