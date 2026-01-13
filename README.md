@@ -1,36 +1,77 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge" alt="Version" />
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blueviolet?style=for-the-badge" alt="Platform" />
-  <img src="https://img.shields.io/badge/runtime-Bash%204+-purple?style=for-the-badge" alt="Runtime" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
-</p>
+# Automated Plan Reviser Pro (apr)
 
-<h1 align="center">Automated Plan Reviser Pro</h1>
-<h3 align="center">apr</h3>
+<div align="center">
+  <img src="apr_illustration.webp" alt="Automated Plan Reviser Pro - Iterative specification refinement with AI">
+</div>
 
-<p align="center">
-  <strong>Iterative specification refinement with GPT Pro Extended Reasoning via Oracle</strong>
-</p>
+<div align="center">
 
-<p align="center">
-  The missing link between your specification documents and production-ready designs.<br/>
-  Run 15-20 rounds of AI review, each building on the last, converging on optimal architecture.
-</p>
+[![Version](https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge)](https://github.com/Dicklesworthstone/automated_plan_reviser_pro/releases)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blueviolet?style=for-the-badge)](https://github.com/Dicklesworthstone/automated_plan_reviser_pro)
+[![Runtime](https://img.shields.io/badge/runtime-Bash%204+-purple?style=for-the-badge)](https://github.com/Dicklesworthstone/automated_plan_reviser_pro)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
-<p align="center">
-  <em>Beautiful gum-based TUI with graceful ANSI fallback. Interactive setup wizard.<br/>
-  Full session tracking, monitoring, and reattachment. Git-integrated round history.</em>
-</p>
+</div>
+
+Iterative specification refinement with GPT Pro Extended Reasoning via Oracle. The missing link between your specification documents and production-ready designs.
+
+<div align="center">
+<h3>Quick Install</h3>
+
+```bash
+curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/automated_plan_reviser_pro/main/install.sh?$(date +%s)" | bash
+```
+
+<p><em>Works on Linux and macOS. Auto-installs to ~/.local/bin with PATH detection.</em></p>
+</div>
 
 ---
 
-<p align="center">
+## TL;DR
+
+**The Problem**: Complex specifications—especially security-sensitive protocols—need multiple rounds of review. A single pass by even the best AI misses architectural issues, edge cases, and subtle flaws. Manually running 15-20 review cycles is tedious and error-prone.
+
+**The Solution**: apr automates iterative specification refinement using GPT Pro 5.2 Extended Reasoning via [Oracle](https://github.com/steipete/oracle). Each round builds on the last, converging toward optimal architecture like a numerical optimizer.
+
+### Why Use apr?
+
+| Feature | What It Does |
+|---------|--------------|
+| **One-Command Iterations** | `apr run 5` kicks off round 5—no manual copy-paste |
+| **Document Bundling** | Automatically combines README, spec, and implementation docs |
+| **Background Processing** | 10-60 minute reviews run in background with notifications |
+| **Session Management** | Attach/detach from running sessions, check status anytime |
+| **Round History** | All outputs saved to `.apr/rounds/` with git integration |
+| **Beautiful TUI** | Gum-powered interface with graceful ANSI fallback |
+| **Robot Mode** | JSON API for coding agents (`apr robot run 5`) |
+
+### Quick Example
 
 ```bash
-curl -fsSL "https://raw.githubusercontent.com/Dicklesworthstone/automated_plan_reviser_pro/main/install.sh" | bash
+# Set up your workflow once
+$ apr setup
+# → Interactive wizard: select README, spec, and implementation files
+
+# Run iterative reviews
+$ apr run 1 --login --wait    # First time: manual ChatGPT login
+$ apr run 2                    # Background execution
+$ apr run 3 --include-impl     # Include implementation every few rounds
+
+# Monitor progress
+$ apr status                   # Check all sessions
+$ apr attach apr-default-round-3   # Attach to specific session
 ```
 
-</p>
+### The Convergence Pattern
+
+```
+Round 1-3:   Major architectural fixes, security gaps identified
+Round 4-7:   Architecture refinements, interface improvements
+Round 8-12:  Nuanced optimizations, edge case handling
+Round 13+:   Polishing abstractions, converging on steady state
+```
+
+Each round, GPT Pro focuses on finer details because major issues were already addressed—like gradient descent settling into a minimum.
 
 ---
 
@@ -119,7 +160,7 @@ Powered by [gum](https://github.com/charmbracelet/gum):
 Configure your workflow once:
 - Select README, spec, implementation files
 - Choose GPT model and reasoning level
-- Automatic template generation
+- Automatic round output management
 - Multiple workflow support
 
 </td>
@@ -557,10 +598,9 @@ apr (bash script, ~1700 LOC)
 ├── config.yaml           # Global settings
 ├── workflows/            # Workflow definitions
 │   └── <name>.yaml
-├── rounds/               # Round outputs
-│   └── <workflow>/
-│       └── round_N.md
-└── templates/            # Custom prompt templates
+└── rounds/               # Round outputs
+    └── <workflow>/
+        └── round_N.md
 ```
 
 ### File Locations
