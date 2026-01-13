@@ -82,62 +82,78 @@ Include this in your AGENTS.md file for any projects where you want to have acce
 ```markdown
 # APR (Automated Plan Reviser Pro) — Agent Reference
 
-Iterative specification refinement via GPT Pro Extended Reasoning. Automates
-multi-round AI review of specs, saving outputs for integration.
+Iterative spec refinement via GPT Pro Extended Reasoning. Multi-round AI review
+with structured outputs for Claude Code integration.
 
-## Quick Commands
+## Commands
 
-apr setup                      # Interactive workflow wizard (first time)
+# Workflow
+apr setup                      # Interactive wizard (first time)
 apr run <N>                    # Run revision round N
-apr run <N> --include-impl     # Include implementation doc
-apr run <N> --dry-run          # Preview without executing
-apr status                     # Check Oracle session status
+apr run <N> -i                 # Include implementation doc
+apr run <N> -d                 # Dry-run preview
+apr show <N>                   # View round output
+
+# Analysis
+apr diff <N> [M]               # Compare rounds (N vs M, or N vs N-1)
+apr stats                      # Convergence analytics
+apr integrate <N> -c           # Claude Code prompt → clipboard (KEY COMMAND)
+
+# Management
+apr status [--hours 24]        # Oracle session status
 apr attach <slug>              # Reattach to session
-apr list                       # List configured workflows
-apr history                    # Show round outputs for workflow
-apr update                     # Self-update to latest version
+apr list                       # List workflows
+apr history                    # Round history
+apr update                     # Self-update
 
-## Robot Mode (JSON API for automation)
+## Robot Mode (JSON API)
 
-apr robot status               # Environment & config info
-apr robot workflows            # List workflows with descriptions
-apr robot init                 # Initialize .apr/ directory
-apr robot validate <N>         # Pre-flight checks (run before expensive rounds!)
-apr robot run <N>              # Execute round, returns {slug, pid, output_file}
-apr robot help                 # Full API documentation
+apr robot status               # {configured, workflows, oracle_available}
+apr robot workflows            # [{name, description}, ...]
+apr robot init                 # Create .apr/
+apr robot validate <N>         # Pre-flight → {valid, errors[], warnings[]}
+apr robot run <N>              # Execute → {slug, pid, output_file, status}
+apr robot history              # List completed rounds
+apr robot help                 # API docs
 
-All robot commands return: {ok, code, data, hint?, meta: {v, ts}}
-Error codes: ok | not_configured | not_found | validation_failed | oracle_error
+Response: {ok, code, data, hint?, meta: {v, ts}}
+Codes: ok | not_configured | not_found | validation_failed | oracle_error
 
 ## Key Paths
 
-.apr/                          # Per-project config directory
-.apr/config.yaml               # Default workflow setting
-.apr/workflows/<name>.yaml     # Workflow definitions
-.apr/rounds/<workflow>/round_N.md  # GPT Pro outputs (this is what you integrate!)
+.apr/rounds/<workflow>/round_N.md   # ← GPT output (INTEGRATE THIS)
+.apr/workflows/<name>.yaml          # Workflow definition
+.apr/config.yaml                    # Default workflow
 
-## Typical Agent Workflow
+## Agent Workflow
 
-1. Validate before running (saves 30+ min on failures):
-   result=$(apr robot validate 5 --workflow myspec)
+# 1. Validate (saves 30+ min on failures)
+apr robot validate 5 -w myspec | jq -e '.data.valid' || exit 1
 
-2. Run the round:
-   result=$(apr robot run 5 --workflow myspec)
-   slug=$(echo "$result" | jq -r '.data.slug')
+# 2. Run
+result=$(apr robot run 5 -w myspec -i)
 
-3. After completion, integrate .apr/rounds/<workflow>/round_N.md
+# 3. After completion — use integrate command or read file directly
+apr integrate 5 -w myspec --copy
+# File: .apr/rounds/myspec/round_5.md
 
 ## Options
 
--w, --workflow NAME    # Specify workflow (default: from config)
--i, --include-impl     # Include implementation document
--d, --dry-run          # Preview oracle command
---wait                 # Block until completion
---login                # Manual browser login (first time)
+-w, --workflow NAME   Workflow (default: from config)
+-i, --include-impl    Include implementation doc
+-d, --dry-run         Preview oracle command
+-c, --copy            Copy to clipboard
+-o, --output FILE     Output to file
+-v, --verbose         Debug output
+--wait                Block until completion
+--login               Browser login (first time)
+--no-preflight        Skip validation
+--hours NUM           Status window (default: 72)
+--compact             Minified JSON (robot mode)
 
 ## Dependencies
 
-Required: bash 4+, oracle (or npx @steipete/oracle), node 18+
+Required: bash 4+, node 18+, oracle (or npx @steipete/oracle)
 Optional: gum (TUI), jq (robot mode)
 ```
 
