@@ -72,8 +72,8 @@ setup_test_environment() {
     export APR_NO_GUM=1
     export CI=true
 
-    # Disable update checks
-    export APR_CHECK_UPDATES=0
+    # Disable update checks (unset, not =0, because script checks for empty)
+    unset APR_CHECK_UPDATES 2>/dev/null || true
 
     # Log test setup
     log_test_step "setup" "Created test environment at $TEST_DIR"

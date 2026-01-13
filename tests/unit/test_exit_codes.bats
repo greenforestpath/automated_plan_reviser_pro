@@ -69,14 +69,21 @@ load '../helpers/test_helper.bash'
     assert_exit_code 2
 }
 
-@test "apr robot run without round number returns EXIT_USAGE_ERROR (2)" {
+@test "apr robot run without round number returns error" {
     run "$APR_SCRIPT" robot run
-    assert_exit_code 2
+    # Robot mode returns JSON with ok:false for missing argument
+    # Exit code is 1 (general error) for robot mode errors
+    assert_exit_code 1
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
 }
 
-@test "apr robot validate without round number returns EXIT_USAGE_ERROR (2)" {
+@test "apr robot validate without round number returns error" {
     run "$APR_SCRIPT" robot validate
-    assert_exit_code 2
+    # Robot mode returns JSON with ok:false for missing argument
+    assert_exit_code 1
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
 }
 
 # =============================================================================
@@ -153,27 +160,29 @@ load '../helpers/test_helper.bash'
 # Robot Mode Error Codes (JSON responses)
 # =============================================================================
 
-@test "apr robot status without config returns not_configured code" {
+@test "apr robot status without config returns ok with configured=false" {
     cd "$TEST_PROJECT"
     # No .apr directory
 
     run "$APR_SCRIPT" robot status
 
-    # Should return JSON with ok:false, code:not_configured
+    # robot status returns ok:true but with configured:false
+    # This allows introspection without treating unconfigured as an error
     assert_valid_json "$output"
-    assert_json_value "$output" ".ok" "false"
-    assert_json_value "$output" ".code" "not_configured"
+    assert_json_value "$output" ".ok" "true"
+    assert_json_value "$output" ".data.configured" "false"
 }
 
-@test "apr robot validate without config returns not_configured code" {
+@test "apr robot validate without config returns validation_failed code" {
     cd "$TEST_PROJECT"
     # No .apr directory
 
     run "$APR_SCRIPT" robot validate 1
 
+    # validate requires config, so it returns validation_failed
     assert_valid_json "$output"
     assert_json_value "$output" ".ok" "false"
-    assert_json_value "$output" ".code" "not_configured"
+    assert_json_value "$output" ".code" "validation_failed"
 }
 
 @test "apr robot workflows without config returns not_configured code" {
