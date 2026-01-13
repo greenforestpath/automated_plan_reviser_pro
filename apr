@@ -10,7 +10,7 @@
 #   - GPT Pro 5.2 Extended Reasoning via Oracle browser automation
 #   - Session monitoring and reattachment
 #   - Configurable document bundles (README, spec, implementation)
-#   - Automatic template generation and round management
+#   - Automatic round output management and history tracking
 #   - Self-update with checksum verification
 #   - Daily update checking (opt-in)
 #
@@ -613,7 +613,6 @@ ensure_config_dir() {
     mkdir -p "$CONFIG_DIR"
     mkdir -p "$CONFIG_DIR/workflows"
     mkdir -p "$CONFIG_DIR/rounds"
-    mkdir -p "$CONFIG_DIR/templates"
 }
 
 load_config() {
@@ -670,7 +669,22 @@ run_setup() {
     # Step 1: Workflow name
     print_step 1 6 "Workflow name"
     local workflow_name
-    workflow_name=$(input "Workflow name" "default")
+    while true; do
+        workflow_name=$(input "Workflow name" "default")
+        # Validate: alphanumeric, hyphens, underscores only
+        if [[ ! "$workflow_name" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            print_error "Invalid name: use only letters, numbers, hyphens, underscores"
+            continue
+        fi
+        # Check for existing workflow
+        if [[ -f "$CONFIG_DIR/workflows/$workflow_name.yaml" ]]; then
+            print_warning "Workflow '$workflow_name' already exists"
+            if ! confirm "Overwrite existing workflow?"; then
+                continue
+            fi
+        fi
+        break
+    done
     echo "" >&2
 
     # Step 2: Project description
@@ -757,28 +771,6 @@ oracle:
 
 rounds:
   output_dir: $CONFIG_DIR/rounds/$workflow_name
-
-template: |
-  First, read this README:
-
-  \`\`\`
-  <contents of README will be included by oracle>
-  \`\`\`
-
-  ---
-
-  NOW: Carefully review this entire plan for me and come up with your best
-  revisions in terms of better architecture, new features, changed features,
-  etc. to make it better, more robust/reliable, more performant, more
-  compelling/useful, etc.
-
-  For each proposed change, give me your detailed analysis and
-  rationale/justification for why it would make the project better along
-  with the git-diff style change versus the original plan shown below:
-
-  \`\`\`
-  <contents of spec will be included by oracle>
-  \`\`\`
 EOF
 
     # Create default config if this is the first workflow
@@ -882,14 +874,13 @@ run_round() {
             "$(gum style --foreground 39 "Include impl:") $include_impl" \
             "$(gum style --foreground 39 "Output:") $output_file" >&2
     elif [[ "$QUIET_MODE" != "true" ]]; then
-        echo -e "${MAGENTA}╭────────────────────────────────────────────────────────────╮${NC}" >&2
-        echo -e "${MAGENTA}│${NC}  ${BOLD}REVISION ROUND $round_num${NC}" >&2
-        echo -e "${MAGENTA}│${NC}" >&2
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Workflow:${NC}     $workflow" >&2
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Model:${NC}        $model" >&2
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Include impl:${NC} $include_impl" >&2
-        echo -e "${MAGENTA}│${NC}  ${CYAN}Output:${NC}       $output_file" >&2
-        echo -e "${MAGENTA}╰────────────────────────────────────────────────────────────╯${NC}" >&2
+        echo "" >&2
+        echo -e "  ${BOLD}${MAGENTA}REVISION ROUND $round_num${NC}" >&2
+        echo "" >&2
+        echo -e "  ${CYAN}Workflow:${NC}     $workflow" >&2
+        echo -e "  ${CYAN}Model:${NC}        $model" >&2
+        echo -e "  ${CYAN}Include impl:${NC} $include_impl" >&2
+        echo -e "  ${CYAN}Output:${NC}       $output_file" >&2
     fi
     echo "" >&2
 
@@ -1026,13 +1017,11 @@ with the git-diff style change versus the original plan shown below:
                 "Attach to session: $(gum style --foreground 82 "apr attach $slug")" \
                 "View with output:  $(gum style --foreground 82 "$ORACLE_CMD session $slug --render")" >&2
         elif [[ "$QUIET_MODE" != "true" ]]; then
-            echo -e "${CYAN}╭────────────────────────────────────────────────────────────╮${NC}" >&2
-            echo -e "${CYAN}│${NC}  ${BOLD}MONITORING COMMANDS${NC}" >&2
-            echo -e "${CYAN}├────────────────────────────────────────────────────────────┤${NC}" >&2
-            echo -e "${CYAN}│${NC}  Check status:      ${GREEN}apr status${NC}" >&2
-            echo -e "${CYAN}│${NC}  Attach to session: ${GREEN}apr attach $slug${NC}" >&2
-            echo -e "${CYAN}│${NC}  View with output:  ${GREEN}$ORACLE_CMD session $slug --render${NC}" >&2
-            echo -e "${CYAN}╰────────────────────────────────────────────────────────────╯${NC}" >&2
+            echo -e "  ${BOLD}${CYAN}MONITORING COMMANDS${NC}" >&2
+            echo "" >&2
+            echo -e "  Check status:      ${GREEN}apr status${NC}" >&2
+            echo -e "  Attach to session: ${GREEN}apr attach $slug${NC}" >&2
+            echo -e "  View with output:  ${GREEN}$ORACLE_CMD session $slug --render${NC}" >&2
         fi
 
         echo "" >&2
@@ -1118,12 +1107,15 @@ show_history() {
 
     for round_file in "$rounds_dir"/round_*.md; do
         [[ -f "$round_file" ]] || continue
-        local round_num size date
+        local round_num size mod_date
         round_num=$(basename "$round_file" .md | sed 's/round_//')
-        size=$(du -h "$round_file" | cut -f1)
-        date=$(stat -c %y "$round_file" 2>/dev/null || stat -f %Sm "$round_file" 2>/dev/null || echo "unknown")
+        size=$(du -h "$round_file" 2>/dev/null | cut -f1)
+        # Cross-platform date: try GNU stat, then BSD stat, then ls fallback
+        mod_date=$(stat -c '%Y-%m-%d %H:%M' "$round_file" 2>/dev/null || \
+                   stat -f '%Sm' -t '%Y-%m-%d %H:%M' "$round_file" 2>/dev/null || \
+                   ls -l "$round_file" 2>/dev/null | awk '{print $6, $7, $8}')
 
-        echo -e "  ${CYAN}Round $round_num${NC}  ${DIM}$size${NC}  ${DIM}$date${NC}" >&2
+        echo -e "  ${CYAN}Round $round_num${NC}  ${DIM}$size${NC}  ${DIM}$mod_date${NC}" >&2
     done
 }
 
@@ -1285,7 +1277,7 @@ robot_init() {
     fi
 
     # Handle errors gracefully to ensure JSON output
-    if ! mkdir -p "$CONFIG_DIR/workflows" "$CONFIG_DIR/rounds" "$CONFIG_DIR/templates" 2>/dev/null; then
+    if ! mkdir -p "$CONFIG_DIR/workflows" "$CONFIG_DIR/rounds" 2>/dev/null; then
         robot_json false "init_failed" "$(jq -nc --arg dir "$CONFIG_DIR" '{directory: $dir}')" "Failed to create directory: $CONFIG_DIR"
         return 1
     fi
@@ -1367,27 +1359,174 @@ robot_validate() {
     fi
 }
 
+# Robot: Run - Execute a revision round
+robot_run() {
+    local round_num="${1:-}"
+    local include_impl="${INCLUDE_IMPL:-false}"
+
+    # First validate
+    if [[ -z "$round_num" ]]; then
+        robot_json false "missing_argument" '{"argument":"round"}' "Round number required"
+        return 1
+    fi
+
+    if ! [[ "$round_num" =~ ^[0-9]+$ ]]; then
+        robot_json false "invalid_argument" "$(jq -nc --arg round "$round_num" '{argument: "round", value: $round}')" "Round must be a number"
+        return 1
+    fi
+
+    # Check Oracle
+    if ! check_oracle; then
+        robot_json false "dependency_missing" '{"dependency":"oracle"}' "Oracle not available"
+        return 1
+    fi
+
+    # Load workflow config
+    local config_path="$CONFIG_DIR/workflows/$WORKFLOW.yaml"
+    if [[ ! -f "$config_path" ]]; then
+        robot_json false "not_found" "$(jq -nc --arg wf "$WORKFLOW" '{resource: "workflow", name: $wf}')" "Workflow not found"
+        return 1
+    fi
+
+    # Parse config
+    local readme_path spec_path impl_path model output_dir
+    readme_path=$(get_config_value "readme" "$config_path" | tr -d '"')
+    spec_path=$(get_config_value "spec" "$config_path" | tr -d '"')
+    impl_path=$(get_config_value "implementation" "$config_path" | tr -d '"')
+    model=$(get_config_value "model" "$config_path" | tr -d '"')
+    output_dir=$(get_config_value "output_dir" "$config_path" | tr -d '"')
+
+    # Validate required files
+    if [[ ! -f "$readme_path" ]]; then
+        robot_json false "not_found" "$(jq -nc --arg f "$readme_path" '{resource: "file", path: $f}')" "README file not found"
+        return 1
+    fi
+    if [[ ! -f "$spec_path" ]]; then
+        robot_json false "not_found" "$(jq -nc --arg f "$spec_path" '{resource: "file", path: $f}')" "Spec file not found"
+        return 1
+    fi
+
+    # Build session info
+    local slug="apr-${WORKFLOW}-round-${round_num}"
+    local output_file="${output_dir}/round_${round_num}.md"
+
+    if [[ "$include_impl" == "true" && -n "$impl_path" ]]; then
+        slug="${slug}-with-impl"
+    fi
+
+    # Build file arguments
+    local file_args=(--file "$readme_path")
+    if [[ "$include_impl" == "true" && -n "$impl_path" && -f "$impl_path" ]]; then
+        file_args+=(--file "$impl_path")
+    fi
+    file_args+=(--file "$spec_path")
+
+    # Build prompt
+    local prompt="First, read this README:
+
+\`\`\`
+<contents of README will be included by oracle>
+\`\`\`
+
+---
+"
+
+    if [[ "$include_impl" == "true" && -n "$impl_path" ]]; then
+        prompt+="
+And here is a document detailing the implementation; you should also keep
+the implementation in mind as you think about the specification, since
+ultimately the specification needs to be translated into code eventually!
+
+\`\`\`
+<contents of implementation will be included by oracle>
+\`\`\`
+
+---
+"
+    fi
+
+    prompt+="
+NOW: Carefully review this entire plan for me and come up with your best
+revisions in terms of better architecture, new features, changed features,
+etc. to make it better, more robust/reliable, more performant, more
+compelling/useful, etc.
+
+For each proposed change, give me your detailed analysis and
+rationale/justification for why it would make the project better along
+with the git-diff style change versus the original plan shown below:
+
+\`\`\`
+<contents of spec will be included by oracle>
+\`\`\`
+"
+
+    # Create output directory
+    mkdir -p "$(dirname "$output_file")" 2>/dev/null
+
+    # Build Oracle command
+    local oracle_args=(
+        --engine browser
+        -m "$model"
+        "${file_args[@]}"
+        --slug "$slug"
+        --write-output "$output_file"
+        --files-report
+        --notify
+        --heartbeat 30
+        -p "$prompt"
+    )
+
+    # Execute in background
+    $ORACLE_CMD "${oracle_args[@]}" &
+    local oracle_pid=$!
+
+    # Return session info
+    local data
+    data=$(jq -nc \
+        --arg slug "$slug" \
+        --argjson pid "$oracle_pid" \
+        --arg output_file "$output_file" \
+        --arg workflow "$WORKFLOW" \
+        --argjson round "$round_num" \
+        --argjson include_impl "$include_impl" \
+        '{
+            slug: $slug,
+            pid: $pid,
+            output_file: $output_file,
+            workflow: $workflow,
+            round: $round,
+            include_impl: $include_impl,
+            status: "running"
+        }')
+
+    robot_json true "ok" "$data" "Use 'apr status' or 'apr attach $slug' to monitor"
+}
+
 # Robot: Help - Show robot mode help in JSON
 robot_help() {
     local data
     data=$(jq -nc '{
         description: "Robot mode for coding agents - JSON interface to APR",
-        usage: "apr robot <command> [args] [--compact]",
+        usage: "apr robot <command> [args] [options]",
         commands: {
             status: "System overview (config, workflows, oracle)",
-            workflows: "List all workflows",
+            workflows: "List all workflows with descriptions",
             init: "Initialize .apr directory",
             validate: "Pre-run validation (apr robot validate <round>)",
+            run: "Execute revision round (apr robot run <round>)",
             help: "This help"
         },
         options: {
-            "-w, --workflow": "Workflow name",
+            "-w, --workflow NAME": "Workflow name (default: from config)",
+            "-i, --include-impl": "Include implementation document",
             "--compact": "Minified JSON output"
         },
         examples: [
             "apr robot status",
             "apr robot workflows",
-            "apr robot validate 1 -w myspec"
+            "apr robot validate 1 -w myspec",
+            "apr robot run 1",
+            "apr robot run 2 -w myspec --include-impl"
         ]
     }')
 
@@ -1424,6 +1563,10 @@ cmd_robot() {
                 WORKFLOW="$2"
                 shift 2
                 ;;
+            -i|--include-impl)
+                INCLUDE_IMPL=true
+                shift
+                ;;
             -*)
                 # Use jq for proper escaping of user input in JSON
                 robot_json false "invalid_option" "$(jq -nc --arg opt "$1" '{option: $opt}')" "Unknown option: $1"
@@ -1454,6 +1597,9 @@ cmd_robot() {
             ;;
         validate)
             robot_validate "${robot_args[0]:-}"
+            ;;
+        run)
+            robot_run "${robot_args[0]:-}"
             ;;
         help|--help|-h)
             robot_help

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge" alt="Version" />
+  <img src="https://img.shields.io/badge/version-1.1.0-blue?style=for-the-badge" alt="Version" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux-blueviolet?style=for-the-badge" alt="Platform" />
   <img src="https://img.shields.io/badge/runtime-Bash%204+-purple?style=for-the-badge" alt="Runtime" />
   <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License" />
@@ -209,6 +209,8 @@ apr [command] [options]
 | `attach <session>` | Attach to a running/completed session |
 | `list` | List all configured workflows |
 | `history` | Show revision history for current workflow |
+| `update` | Check for and install updates |
+| `robot <cmd>` | Machine-friendly JSON interface for coding agents |
 | `help` | Show help message |
 
 ### Options
@@ -223,7 +225,7 @@ apr [command] [options]
 | `--wait` | Wait for completion (blocking) |
 | `--login` | Manual login mode (first-time setup) |
 | `--keep-browser` | Keep browser open after completion |
-| `-v, --verbose` | Verbose output |
+| `-q, --quiet` | Minimal output (errors only) |
 | `--version` | Show version |
 
 ### Examples
@@ -329,7 +331,7 @@ Run `apr setup` to launch the interactive wizard:
 
 ```
 ╔════════════════════════════════════════════════════════════╗
-║    Automated Plan Reviser Pro v1.0.0                       ║
+║    Automated Plan Reviser Pro v1.1.0                       ║
 ║    Iterative AI-Powered Spec Refinement                    ║
 ╚════════════════════════════════════════════════════════════╝
 
@@ -543,7 +545,7 @@ Everything has fallbacks:
 ### Component Overview
 
 ```
-apr (bash script, ~800 LOC)
+apr (bash script, ~1700 LOC)
 ├── Gum integration (beautiful TUI)
 ├── Oracle detection (global or npx)
 ├── Interactive setup wizard
@@ -579,7 +581,7 @@ APR uses [gum](https://github.com/charmbracelet/gum) for beautiful terminal outp
 
 ```
 ╔════════════════════════════════════════════════════════════╗
-║    Automated Plan Reviser Pro v1.0.0                       ║
+║    Automated Plan Reviser Pro v1.1.0                       ║
 ║    Iterative AI-Powered Spec Refinement                    ║
 ╚════════════════════════════════════════════════════════════╝
 
@@ -664,7 +666,9 @@ sudo apt update && sudo apt install gum
 |----------|-------------|---------|
 | `APR_HOME` | Data directory | `~/.local/share/apr` |
 | `APR_CACHE` | Cache directory | `~/.cache/apr` |
-| `APR_NO_GUM` | Disable gum installation | unset |
+| `APR_CHECK_UPDATES` | Enable daily update checking | unset (set to `1` to enable) |
+| `APR_NO_GUM` | Disable gum even if available | unset |
+| `NO_COLOR` | Disable colored output (accessibility) | unset |
 | `CI` | Detected CI environment (disables gum) | unset |
 
 ---
