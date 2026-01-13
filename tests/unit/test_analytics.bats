@@ -542,30 +542,27 @@ OUTER
     [[ "$result_check" == "pass" ]]
 }
 
-@test "calculate_change_velocity_signal: returns 0 for insufficient rounds" {
-    metrics_init "velocity-test-1"
-
-    # Only 2 rounds
-    metrics_write_round "velocity-test-1" 1 '{"round":1}'
-    metrics_write_round "velocity-test-1" 2 '{"round":2,"changes_from_previous":{"diff_ratio":0.1}}'
+@test "calculate_change_velocity_signal: returns 0 for insufficient data" {
+    # Function takes JSON with rounds array
+    local metrics_json='{"rounds":[
+        {"round":1},
+        {"round":2,"changes_from_previous":{"diff_ratio":0.1}}
+    ]}'
 
     local result
-    result=$(calculate_change_velocity_signal "velocity-test-1")
+    result=$(calculate_change_velocity_signal "$metrics_json")
 
     log_test_actual "result" "$result"
 
     [[ "$result" == "0" ]]
 }
 
-@test "calculate_similarity_trend_signal: returns 0 for insufficient rounds" {
-    metrics_init "similarity-test-1"
-
-    # Only 2 rounds
-    metrics_write_round "similarity-test-1" 1 '{"round":1}'
-    metrics_write_round "similarity-test-1" 2 '{"round":2}'
+@test "calculate_similarity_trend_signal: returns 0 for insufficient data" {
+    # Function takes JSON with rounds array
+    local metrics_json='{"rounds":[{"round":1},{"round":2}]}'
 
     local result
-    result=$(calculate_similarity_trend_signal "similarity-test-1")
+    result=$(calculate_similarity_trend_signal "$metrics_json")
 
     log_test_actual "result" "$result"
 
