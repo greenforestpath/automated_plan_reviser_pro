@@ -1306,6 +1306,8 @@ metrics_read() {
     local metrics_path
     metrics_path=$(metrics_file_path "$workflow")
 
+    verbose "metrics_read: workflow=$workflow path=$metrics_path"
+
     if ! command -v jq &>/dev/null; then
         print_error "jq is required for analytics metrics"
         return 1
@@ -1313,6 +1315,7 @@ metrics_read() {
 
     metrics_init "$workflow" || return 1
 
+    verbose "metrics_read: loading metrics JSON"
     local json
     json=$(cat "$metrics_path")
     if ! metrics_validate_json "$json"; then
@@ -1326,6 +1329,8 @@ metrics_validate() {
     local workflow="$1"
     local metrics_path
     metrics_path=$(metrics_file_path "$workflow")
+
+    verbose "metrics_validate: workflow=$workflow path=$metrics_path"
 
     if ! command -v jq &>/dev/null; then
         print_error "jq is required for analytics metrics"
@@ -1350,6 +1355,8 @@ metrics_migrate() {
     local workflow="$1"
     local metrics_path
     metrics_path=$(metrics_file_path "$workflow")
+
+    verbose "metrics_migrate: workflow=$workflow path=$metrics_path"
 
     if [[ ! -f "$metrics_path" ]]; then
         return 0

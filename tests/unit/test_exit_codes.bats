@@ -1,0 +1,287 @@
+#!/usr/bin/env bats
+# test_exit_codes.bats - Unit tests for APR exit codes and error handling
+
+# Load test helpers
+load '../helpers/test_helper.bash'
+
+# =============================================================================
+# EXIT_SUCCESS (0) - Successful Operations
+# =============================================================================
+
+@test "apr --help returns EXIT_SUCCESS (0)" {
+    run "$APR_SCRIPT" --help
+    assert_exit_code 0
+}
+
+@test "apr --version returns EXIT_SUCCESS (0)" {
+    run "$APR_SCRIPT" --version
+    assert_exit_code 0
+}
+
+@test "apr help returns EXIT_SUCCESS (0)" {
+    run "$APR_SCRIPT" help
+    assert_exit_code 0
+}
+
+@test "apr robot help returns EXIT_SUCCESS (0)" {
+    run "$APR_SCRIPT" robot help
+    assert_exit_code 0
+}
+
+@test "apr list with no workflows returns EXIT_SUCCESS (0)" {
+    cd "$TEST_PROJECT"
+    mkdir -p .apr/workflows
+
+    run "$APR_SCRIPT" list
+    # Returns 0 even with no workflows
+    assert_exit_code 0
+}
+
+# =============================================================================
+# EXIT_USAGE_ERROR (2) - Bad Arguments
+# =============================================================================
+
+@test "apr with invalid command returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" invalidcommand
+    assert_exit_code 2
+}
+
+@test "apr run without round number returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" run
+    assert_exit_code 2
+}
+
+@test "apr run with non-numeric round returns EXIT_USAGE_ERROR (2)" {
+    cd "$TEST_PROJECT"
+    setup_test_workflow
+
+    run "$APR_SCRIPT" run abc
+    assert_exit_code 2
+}
+
+@test "apr show without round number returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" show
+    assert_exit_code 2
+}
+
+@test "apr attach without session name returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" attach
+    assert_exit_code 2
+}
+
+@test "apr robot run without round number returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" robot run
+    assert_exit_code 2
+}
+
+@test "apr robot validate without round number returns EXIT_USAGE_ERROR (2)" {
+    run "$APR_SCRIPT" robot validate
+    assert_exit_code 2
+}
+
+# =============================================================================
+# EXIT_CONFIG_ERROR (4) - Config Problems
+# =============================================================================
+
+@test "apr run in directory without .apr returns EXIT_CONFIG_ERROR (4)" {
+    cd "$TEST_PROJECT"
+    # No .apr directory
+
+    run "$APR_SCRIPT" run 1 --dry-run
+    assert_exit_code 4
+}
+
+@test "apr run with nonexistent workflow returns EXIT_CONFIG_ERROR (4)" {
+    cd "$TEST_PROJECT"
+    mkdir -p .apr/workflows
+    echo "default_workflow: default" > .apr/config.yaml
+
+    run "$APR_SCRIPT" run 1 -w nonexistent --dry-run
+    assert_exit_code 4
+}
+
+@test "apr show with missing round file returns EXIT_CONFIG_ERROR (4)" {
+    cd "$TEST_PROJECT"
+    setup_test_workflow
+
+    run "$APR_SCRIPT" show 99
+    # Round 99 doesn't exist
+    assert_exit_code 4
+}
+
+@test "apr diff with missing rounds returns EXIT_CONFIG_ERROR (4)" {
+    cd "$TEST_PROJECT"
+    setup_test_workflow
+
+    run "$APR_SCRIPT" diff 1 2
+    # Neither round exists
+    assert_exit_code 4
+}
+
+@test "apr history with no rounds returns EXIT_SUCCESS but shows empty" {
+    cd "$TEST_PROJECT"
+    setup_test_workflow
+
+    run "$APR_SCRIPT" history
+    # Returns success but shows no rounds
+    assert_exit_code 0
+    assert_output --partial "No rounds"
+}
+
+# =============================================================================
+# EXIT_DEPENDENCY_ERROR (3) - Missing Dependencies
+# =============================================================================
+
+@test "apr run without Oracle shows dependency error" {
+    cd "$TEST_PROJECT"
+    setup_test_workflow
+
+    # Hide oracle from PATH
+    local original_path="$PATH"
+    export PATH="/usr/bin:/bin"
+
+    run "$APR_SCRIPT" run 1
+
+    export PATH="$original_path"
+
+    # Should fail due to missing Oracle
+    # Exit code 3 (dependency) or include error message about Oracle
+    [[ $status -eq 3 ]] || [[ "$output" =~ [Oo]racle ]]
+}
+
+# =============================================================================
+# Robot Mode Error Codes (JSON responses)
+# =============================================================================
+
+@test "apr robot status without config returns not_configured code" {
+    cd "$TEST_PROJECT"
+    # No .apr directory
+
+    run "$APR_SCRIPT" robot status
+
+    # Should return JSON with ok:false, code:not_configured
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
+    assert_json_value "$output" ".code" "not_configured"
+}
+
+@test "apr robot validate without config returns not_configured code" {
+    cd "$TEST_PROJECT"
+    # No .apr directory
+
+    run "$APR_SCRIPT" robot validate 1
+
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
+    assert_json_value "$output" ".code" "not_configured"
+}
+
+@test "apr robot workflows without config returns not_configured code" {
+    cd "$TEST_PROJECT"
+    # No .apr directory
+
+    run "$APR_SCRIPT" robot workflows
+
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
+    assert_json_value "$output" ".code" "not_configured"
+}
+
+@test "apr robot init creates config and returns ok" {
+    cd "$TEST_PROJECT"
+
+    run "$APR_SCRIPT" robot init
+
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "true"
+    assert_dir_exists ".apr"
+}
+
+@test "apr robot status after init returns configured" {
+    cd "$TEST_PROJECT"
+    "$APR_SCRIPT" robot init >/dev/null
+
+    run "$APR_SCRIPT" robot status
+
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "true"
+    assert_json_value "$output" ".data.configured" "true"
+}
+
+@test "apr robot validate with nonexistent workflow returns validation_failed" {
+    cd "$TEST_PROJECT"
+    "$APR_SCRIPT" robot init >/dev/null
+
+    run "$APR_SCRIPT" robot validate 1 -w nonexistent
+
+    assert_valid_json "$output"
+    assert_json_value "$output" ".ok" "false"
+    # Could be not_found or validation_failed
+    [[ $(echo "$output" | jq -r '.code') =~ ^(not_found|validation_failed)$ ]]
+}
+
+# =============================================================================
+# Exit Code Constants Verification
+# =============================================================================
+
+@test "EXIT_SUCCESS is defined as 0" {
+    load_apr_functions
+
+    [[ "$EXIT_SUCCESS" -eq 0 ]]
+}
+
+@test "EXIT_USAGE_ERROR is defined as 2" {
+    load_apr_functions
+
+    [[ "$EXIT_USAGE_ERROR" -eq 2 ]]
+}
+
+@test "EXIT_DEPENDENCY_ERROR is defined as 3" {
+    load_apr_functions
+
+    [[ "$EXIT_DEPENDENCY_ERROR" -eq 3 ]]
+}
+
+@test "EXIT_CONFIG_ERROR is defined as 4" {
+    load_apr_functions
+
+    [[ "$EXIT_CONFIG_ERROR" -eq 4 ]]
+}
+
+@test "EXIT_NETWORK_ERROR is defined as 10" {
+    load_apr_functions
+
+    [[ "$EXIT_NETWORK_ERROR" -eq 10 ]]
+}
+
+@test "EXIT_UPDATE_ERROR is defined as 11" {
+    load_apr_functions
+
+    [[ "$EXIT_UPDATE_ERROR" -eq 11 ]]
+}
+
+# =============================================================================
+# Error Message Format
+# =============================================================================
+
+@test "error messages go to stderr" {
+    capture_streams "$APR_SCRIPT" invalidcommand
+
+    # Error message should be on stderr, not stdout
+    [[ -z "$CAPTURED_STDOUT" ]]
+    [[ -n "$CAPTURED_STDERR" ]]
+}
+
+@test "error messages include error prefix" {
+    run "$APR_SCRIPT" invalidcommand 2>&1
+
+    # Should include some error indicator
+    [[ "$output" =~ ([Ee]rror|[Uu]nknown|[Ii]nvalid) ]]
+}
+
+@test "usage errors include help hint" {
+    run "$APR_SCRIPT" run 2>&1
+
+    # Should suggest --help or show usage
+    [[ "$output" =~ (help|usage|Usage) ]] || [[ "$output" =~ [Rr]ound ]]
+}
