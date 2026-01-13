@@ -3784,7 +3784,6 @@ dashboard_build_rounds() {
     DASHBOARD_ROUND_SIMILARITY=()
     DASHBOARD_ROUND_TS=()
 
-    local line
     while IFS=$'\t' read -r round_num size added deleted similarity timestamp; do
         [[ -n "$round_num" ]] || continue
         DASHBOARD_ROUND_NUMS+=("$round_num")
@@ -3944,7 +3943,7 @@ dashboard_render_round_table() {
             "${added:-"-"}" "${deleted:-"-"}" "$similarity" "$ts" >&2
     done
     printf "\n" >&2
-    printf "Keys: Enter=details  d=diff  r=refresh  q=quit\n" >&2
+    printf "Keys: Enter=details  d=diff  r=refresh  ?=help  q=quit\n" >&2
 }
 
 dashboard_show_help() {
@@ -4083,6 +4082,10 @@ show_dashboard() {
                     dashboard_clear
                     diff_rounds "${DASHBOARD_ROUND_NUMS[$selected]}" "${DASHBOARD_ROUND_NUMS[$((selected - 1))]}"
                     print_dim "Press any key to return..." >&2
+                    read -rsn1 _ </dev/tty
+                else
+                    print_warning "Round 1 has no previous round to diff"
+                    print_dim "Press any key to continue..." >&2
                     read -rsn1 _ </dev/tty
                 fi
                 ;;
