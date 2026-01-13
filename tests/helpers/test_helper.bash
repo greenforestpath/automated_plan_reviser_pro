@@ -305,18 +305,19 @@ setup_mock_oracle() {
     cat > "$mock_oracle" << 'EOF'
 #!/usr/bin/env bash
 # Mock Oracle for APR testing
+# All debug output goes to stderr to avoid interfering with JSON responses
 echo "Mock Oracle called with: $*" >&2
 
 case "$1" in
     status)
-        echo "No active sessions"
+        echo "No active sessions" >&2
         ;;
     session)
-        echo "Session: $2"
+        echo "Session: $2" >&2
         ;;
     *)
-        # Simulate a long-running request
-        echo "Mock response for: $*"
+        # Simulate a long-running request - output to stderr only
+        echo "Mock response for: $*" >&2
         ;;
 esac
 exit 0
