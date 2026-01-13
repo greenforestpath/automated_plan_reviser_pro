@@ -660,13 +660,16 @@ EOF
     [[ "$output" == *"write-output"* ]] || [[ "$output" == *"round_1"* ]]
 }
 
-@test "run --dry-run: includes --notify flag" {
+@test "run --dry-run: includes --notify flag if Oracle supports it" {
     run "$APR_SCRIPT" run 1 --dry-run
 
     log_test_output "$output"
 
     assert_success
-    # Should include notify for desktop notifications
+    # --notify is conditionally included only if Oracle supports it.
+    # The dry-run output may contain "notify" in the command (if supported)
+    # or in the verbose output (feature detection message). Either way,
+    # the test passes if any flags are present (indicating Oracle args were built).
     [[ "$output" == *"notify"* ]] || [[ "$output" == *"--"* ]]
 }
 

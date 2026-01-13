@@ -116,6 +116,9 @@ CONFIG_DIR=".apr"
 # Oracle command (determined at runtime)
 ORACLE_CMD=()
 
+# Oracle feature detection (set during preflight)
+ORACLE_SUPPORTS_NOTIFY=false
+
 # Temp directory for cleanup on exit
 APR_TEMP_DIR=""
 
@@ -590,6 +593,15 @@ preflight_check() {
     else
         print_warning "Could not verify Oracle version (may still work)"
         has_warnings=true
+    fi
+
+    # Detect Oracle feature support (--notify may not exist in older versions)
+    if "${ORACLE_CMD[@]}" --help 2>&1 | grep -q -- '--notify'; then
+        ORACLE_SUPPORTS_NOTIFY=true
+        verbose "preflight: Oracle supports --notify"
+    else
+        ORACLE_SUPPORTS_NOTIFY=false
+        verbose "preflight: Oracle does not support --notify (older version)"
     fi
 
     # Check source files exist and are readable
@@ -2536,7 +2548,8 @@ run_round() {
         echo "    --write-output \"$output_file\" \\" >&2
         [[ "$manual_login" == "true" ]] && echo "    --browser-manual-login \\" >&2
         [[ "$keep_browser" == "true" ]] && echo "    --browser-keep-browser \\" >&2
-        echo "    --notify --heartbeat 30 \\" >&2
+        [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && echo "    --notify \\" >&2
+        echo "    --heartbeat 30 \\" >&2
         echo "    -p \"<prompt>\"" >&2
         exit $EXIT_SUCCESS
     fi
@@ -2566,10 +2579,10 @@ run_round() {
         --slug "$slug"
         --write-output "$output_file"
         --files-report
-        --notify
         --heartbeat 30
     )
 
+    [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
     [[ "$manual_login" == "true" ]] && oracle_args+=(--browser-manual-login)
     [[ "$keep_browser" == "true" ]] && oracle_args+=(--browser-keep-browser)
     oracle_args+=(-p "$prompt")
@@ -4858,10 +4871,11 @@ robot_run() {
         --slug "$slug"
         --write-output "$output_file"
         --files-report
-        --notify
         --heartbeat 30
         -p "$prompt"
     )
+
+    [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
 
     verbose "robot_run Oracle command: ${ORACLE_CMD[*]} ${oracle_args[*]}"
     verbose "robot_run output_file: $output_file"
