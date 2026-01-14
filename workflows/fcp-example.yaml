@@ -27,6 +27,11 @@ rounds:
   # Where round outputs are saved
   output_dir: .apr/rounds/fcp-spec
 
+  # Automatically include implementation document every N rounds
+  # This keeps the spec grounded in implementation reality
+  # Set to 0 or omit to disable (use --include-impl manually)
+  impl_every_n: 4
+
 # Custom prompt template
 # The standard template works for most cases, but you can customize here
 template: |

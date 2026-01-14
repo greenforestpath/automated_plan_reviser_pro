@@ -2604,12 +2604,21 @@ run_round() {
     fi
 
     # Parse config (simple grep-based for now)
-    local readme_path spec_path impl_path model output_dir
+    local readme_path spec_path impl_path model output_dir impl_every_n
     readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
     spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
     impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
     model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
     output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
+    impl_every_n=$(yaml_unquote "$(get_config_value "impl_every_n" "$config_path")")
+
+    # Auto-include implementation every N rounds if configured
+    if [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
+        if (( round_num % impl_every_n == 0 )); then
+            verbose "impl_every_n=$impl_every_n: round $round_num triggers automatic impl inclusion"
+            include_impl=true
+        fi
+    fi
 
     local config_errors=()
     [[ -z "$model" ]] && config_errors+=("Model not configured in workflow")
@@ -3002,8 +3011,15 @@ run_round() {
     # Contextual suggestions
     if [[ "$round_num" == "1" && "$manual_login" != "true" ]]; then
         print_dim "Tip: For first runs, use --login to handle browser authentication"
+    elif [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
+        local next_impl_round=$(( ((round_num / impl_every_n) + 1) * impl_every_n ))
+        if [[ "$include_impl" == "true" ]]; then
+            print_dim "Tip: This round includes impl (every $impl_every_n rounds)"
+        else
+            print_dim "Tip: Impl auto-included every $impl_every_n rounds (next: round $next_impl_round)"
+        fi
     elif [[ "$round_num" -ge 3 && "$include_impl" != "true" && -n "$impl_path" ]]; then
-        print_dim "Tip: Try using --include-impl to get implementation-aware feedback"
+        print_dim "Tip: Try impl_every_n: 4 in workflow to auto-include impl periodically"
     elif [[ "$round_num" -ge 5 ]]; then
         print_dim "Tip: After 5+ rounds, look for convergence - similar feedback suggests stability"
     fi
@@ -5008,12 +5024,21 @@ robot_run() {
     fi
 
     # Parse config
-    local readme_path spec_path impl_path model output_dir
+    local readme_path spec_path impl_path model output_dir impl_every_n
     readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
     spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
     impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
     model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
     output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
+    impl_every_n=$(yaml_unquote "$(get_config_value "impl_every_n" "$config_path")")
+
+    # Auto-include implementation every N rounds if configured
+    if [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
+        if (( round_num % impl_every_n == 0 )); then
+            verbose "impl_every_n=$impl_every_n: round $round_num triggers automatic impl inclusion"
+            include_impl=true
+        fi
+    fi
 
     if [[ -z "$model" ]]; then
         robot_json false "validation_failed" '{"errors":["Model not configured in workflow"]}' "Fix workflow configuration"

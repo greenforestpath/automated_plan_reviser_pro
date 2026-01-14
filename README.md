@@ -358,7 +358,12 @@ npm install -g @steipete/oracle
 
 ### First Run
 
+**Important: Run APR from your project directory** (where your README, spec, and implementation files live). The `.apr/` configuration directory will be created there.
+
 ```bash
+# Navigate to your project
+cd /path/to/your/project
+
 # 1. Run the setup wizard
 apr setup
 
@@ -510,6 +515,26 @@ APR automates this workflow:
 You might object that it's pointless to update the README and implementation document if we know already that we are going to make many more revisions to the specification document. But when you start thinking of each round of iteration as a sort of perturbation in an optimization process, you want these changes mirrored in the implementation as you go.
 
 **This reduces the shock of trying to apply N revisions all at once and helps to surface problems better.** After all, when you start turning ideas into code, the faulty assumptions get surfaced earlier and can feed back into your specification revisions.
+
+### Automatic Implementation Inclusion
+
+Instead of manually adding `--include-impl` every few rounds, you can configure automatic periodic inclusion in your workflow:
+
+```yaml
+# .apr/workflows/fcp.yaml
+rounds:
+  output_dir: .apr/rounds/fcp
+  impl_every_n: 4  # Include implementation every 4th round (4, 8, 12, ...)
+```
+
+With `impl_every_n: 4`:
+- Rounds 1, 2, 3: README + spec only
+- Round 4: README + **impl** + spec (automatic)
+- Rounds 5, 6, 7: README + spec only
+- Round 8: README + **impl** + spec (automatic)
+- ...and so on
+
+This ensures implementation-grounded feedback at regular intervals without manual intervention. You can still override with `--include-impl` for any specific round.
 
 ---
 
@@ -1751,6 +1776,16 @@ Once authenticated, Oracle maintains the ChatGPT session in the browser. You can
 3. Reattach to sessions: `apr attach <slug>`
 
 If the session expires, you may need to re-authenticate by visiting ChatGPT in the browser on your local machine.
+
+### How Documents Are Sent (Inline Pasting)
+
+APR uses Oracle's `--browser-attachments never` mode, which **pastes document contents directly into the chat** rather than uploading them as file attachments. This is more reliable because:
+
+- **No upload failures**: File uploads to ChatGPT can fail silently or trigger "duplicate file" errors
+- **Consistent formatting**: Pasted content appears exactly as intended
+- **No attachment limits**: Works regardless of ChatGPT's file upload restrictions
+
+The documents are combined with the prompt template and pasted as a single message. For typical workflows (README + spec + impl ~200KB), this works reliably within GPT's context limits.
 
 ### Security Considerations
 

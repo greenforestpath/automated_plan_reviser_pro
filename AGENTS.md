@@ -126,15 +126,22 @@ documents:
 
 oracle:
   model: "5.2 Thinking"
-  thinking_time: heavy
 
 rounds:
   output_dir: .apr/rounds/example
+  impl_every_n: 4  # Auto-include implementation every 4th round
 
 template: |
   First, read this README:
   ...
 ```
+
+**Key config options:**
+
+- `impl_every_n: N` — Automatically include implementation document every Nth round (e.g., rounds 4, 8, 12...)
+- This keeps the spec grounded in implementation reality without manual `--include-impl` flags
+
+**Run APR from your project directory** where your README, spec, and implementation files live. The `.apr/` configuration is per-project.
 
 ---
 
@@ -196,16 +203,25 @@ APR uses [Oracle](https://github.com/steipete/oracle) for GPT Pro browser automa
 Key Oracle features used:
 - `--engine browser` — Browser automation for ChatGPT webapp
 - `-m "5.2 Thinking"` — Model selection with extended reasoning
+- `--browser-attachments never` — **Paste inline instead of file uploads** (more reliable)
 - `--slug` — Human-readable session identifier
 - `--write-output` — Save response to file
-- `--notify` — Desktop notification on completion
+- `--notify` — Desktop notification on completion (if supported)
 - `--heartbeat` — Progress updates
-- `--browser-manual-login` — Persistent profile for auth
+
+**Critical: Inline Pasting vs File Uploads**
+
+APR always uses `--browser-attachments never` to paste document contents directly into the chat. This is far more reliable than file uploads because:
+- File uploads can fail silently or trigger "duplicate file" errors
+- File uploads don't support placeholder interpolation
+- Inline pasting works consistently for documents up to ~200KB
 
 Session management:
 - `oracle status` — List recent sessions
 - `oracle session <slug>` — Attach to session
 - `oracle session <slug> --render` — View with output
+
+For headless/SSH environments, see README.md section on Oracle Remote Setup.
 
 ---
 
