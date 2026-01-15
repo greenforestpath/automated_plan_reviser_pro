@@ -63,7 +63,7 @@
 
 set -euo pipefail
 
-VERSION="1.2.1"
+VERSION="1.2.2"
 
 # Metrics schema (analytics)
 readonly METRICS_SCHEMA_VERSION="1.0.0"
@@ -1846,9 +1846,7 @@ metrics_write_round() {
     local current_json
     current_json=$(cat "$metrics_path")
 
-    merged=$(echo "$current_json" | jq -c --argjson round "$normalized_round" --argjson num "$round_num" --arg ts "$ts" '.rounds |= (map(select(.round != $num)) + [$round] | sort_by(.round)) | .updated_at = $ts')
-
-    if [[ $? -ne 0 ]]; then
+    if ! merged=$(echo "$current_json" | jq -c --argjson round "$normalized_round" --argjson num "$round_num" --arg ts "$ts" '.rounds |= (map(select(.round != $num)) + [$round] | sort_by(.round)) | .updated_at = $ts'); then
         print_error "Failed to merge round metrics"
         metrics_unlock "$workflow"
         return 1
@@ -1889,9 +1887,7 @@ metrics_write_convergence() {
     ts=$(iso_timestamp)
     current_json=$(cat "$metrics_path")
 
-    merged=$(echo "$current_json" | jq -c --argjson convergence "$convergence_json" --arg ts "$ts" '.convergence = $convergence | .updated_at = $ts')
-
-    if [[ $? -ne 0 ]]; then
+    if ! merged=$(echo "$current_json" | jq -c --argjson convergence "$convergence_json" --arg ts "$ts" '.convergence = $convergence | .updated_at = $ts'); then
         print_error "Failed to merge convergence metrics"
         metrics_unlock "$workflow"
         return 1
