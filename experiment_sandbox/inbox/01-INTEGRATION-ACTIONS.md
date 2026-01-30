@@ -24,8 +24,8 @@
 - Add to research_tool AGENTS.md
 
 **Files to Update:**
-- `/Users/personal/Projects/CFWOS/automated_plan_reviser_pro/mise.toml` (create)
-- `/Users/personal/Projects/CFWOS/cfwos_meta/DOC_ARCHITECTURE.md` (add note)
+- `/Users/personal/Projects/CFOS/automated_plan_reviser_pro/mise.toml` (create)
+- `/Users/personal/Projects/CFOS/cfos/DOC_ARCHITECTURE.md` (add note)
 
 **Provenance:** Discovered during Oracle testing - requires Node ≥22, we had v20.10.0
 
@@ -40,7 +40,7 @@
 
 **Command:**
 ```bash
-ln -sf /Users/personal/Projects/CFWOS/automated_plan_reviser_pro/apr ~/.local/bin/apr
+ln -sf /Users/personal/Projects/CFOS/automated_plan_reviser_pro/apr ~/.local/bin/apr
 ```
 
 ---
@@ -66,7 +66,7 @@ ln -sf /Users/personal/Projects/CFWOS/automated_plan_reviser_pro/apr ~/.local/bi
 - Keep Playwriter for Claude.ai (Oracle doesn't support)
 
 **Files:**
-- `/Users/personal/Projects/CFWOS/research_tool/src/providers/chatgpt.ts`
+- `/Users/personal/Projects/CFOS/research_tool/src/providers/chatgpt.ts`
 
 **Provenance:** Integration analysis: Oracle has better Extended Thinking handling
 

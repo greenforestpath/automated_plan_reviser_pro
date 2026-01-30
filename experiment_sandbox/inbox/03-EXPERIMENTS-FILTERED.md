@@ -45,7 +45,7 @@ For each experiment:
 
 **Concrete Steps:**
 ```bash
-cd /Users/personal/Projects/CFWOS/automated_plan_reviser_pro
+cd /Users/personal/Projects/CFOS/automated_plan_reviser_pro
 ./apr robot status              # Check environment
 ./apr robot init                # Already done, verify
 mkdir -p experiment_sandbox/fixtures
@@ -131,7 +131,7 @@ npx -y @steipete/oracle --engine browser \
 **Concrete Steps:**
 ```bash
 # Use research_tool's types.ts as spec (small, real)
-cp /Users/personal/Projects/CFWOS/research_tool/src/core/types.ts \
+cp /Users/personal/Projects/CFOS/research_tool/src/core/types.ts \
    experiment_sandbox/fixtures/research-tool-types.md
 
 # Create workflow
@@ -140,7 +140,7 @@ name: rt-types
 description: Refine research_tool type definitions
 
 documents:
-  readme: /Users/personal/Projects/CFWOS/research_tool/README.md
+  readme: /Users/personal/Projects/CFOS/research_tool/README.md
   spec: experiment_sandbox/fixtures/research-tool-types.md
 
 oracle:
