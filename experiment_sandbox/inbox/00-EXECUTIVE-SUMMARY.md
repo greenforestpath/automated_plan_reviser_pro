@@ -77,7 +77,7 @@ npx -y @steipete/oracle --remote-chrome localhost:9222 --engine browser -m "5.2 
 
 1. [ ] Test multi-round convergence
 2. [ ] Integrate remote-chrome into APR config
-3. [ ] Build research_tool provider using this pattern
+3. [ ] Build cfos_research_tool provider using this pattern
 4. [ ] Test Extended Thinking time limits
 
 ---

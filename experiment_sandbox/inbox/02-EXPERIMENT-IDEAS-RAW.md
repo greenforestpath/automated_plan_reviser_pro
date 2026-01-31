@@ -15,7 +15,7 @@
 
 ## Category B: Spec Refinement (APR's Native Use Case)
 
-6. **E06-real-spec**: Run 5 rounds on research_tool's SPECIFICATION.md
+6. **E06-real-spec**: Run 5 rounds on cfos_research_tool's SPECIFICATION.md
 7. **E07-convergence-tracking**: Run until convergence detected, verify metrics
 8. **E08-include-impl**: Test `--include-impl` flag with real implementation
 9. **E09-round-diff**: Verify `apr diff` shows meaningful differences
@@ -29,12 +29,12 @@
 14. **E14-research-convergence**: Does convergence algorithm detect "answer completeness"?
 15. **E15-research-vs-spec**: Compare same question as spec vs research template
 
-## Category D: Integration with research_tool
+## Category D: Integration with cfos_research_tool
 
-16. **E16-oracle-in-rt**: Call Oracle from research_tool TypeScript code
-17. **E17-apr-robot-in-rt**: Call `apr robot run` from research_tool
+16. **E16-oracle-in-rt**: Call Oracle from cfos_research_tool TypeScript code
+17. **E17-apr-robot-in-rt**: Call `apr robot run` from cfos_research_tool
 18. **E18-triangulation-input**: Use APR output as input to triangulation
-19. **E19-apr-as-stage**: Add APR as a pipeline stage in research_tool
+19. **E19-apr-as-stage**: Add APR as a pipeline stage in cfos_research_tool
 20. **E20-shared-state**: Experiment with sharing session data between tools
 
 ## Category E: Prompt Engineering

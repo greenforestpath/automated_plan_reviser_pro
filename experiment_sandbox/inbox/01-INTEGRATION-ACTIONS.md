@@ -21,7 +21,7 @@
 **Action:**
 - Add `mise.toml` to APR with `node = "22"` requirement
 - Update DOC_ARCHITECTURE.md with Oracle Node requirement
-- Add to research_tool AGENTS.md
+- Add to cfos_research_tool AGENTS.md
 
 **Files to Update:**
 - `/Users/personal/Projects/CFOS/automated_plan_reviser_pro/mise.toml` (create)
@@ -58,7 +58,7 @@ ln -sf /Users/personal/Projects/CFOS/automated_plan_reviser_pro/apr ~/.local/bin
 
 ## Tier 2: High Confidence + Medium Effort (Do After Tier 1)
 
-### A4: Oracle ChatGPT Provider in research_tool
+### A4: Oracle ChatGPT Provider in cfos_research_tool
 **Confidence:** 80% | **Effort:** Medium | **Impact:** Better session management
 
 **Action:**
@@ -66,7 +66,7 @@ ln -sf /Users/personal/Projects/CFOS/automated_plan_reviser_pro/apr ~/.local/bin
 - Keep Playwriter for Claude.ai (Oracle doesn't support)
 
 **Files:**
-- `/Users/personal/Projects/CFOS/research_tool/src/providers/chatgpt.ts`
+- `/Users/personal/Projects/CFOS/cfos_research_tool/src/providers/chatgpt.ts`
 
 **Provenance:** Integration analysis: Oracle has better Extended Thinking handling
 
@@ -76,7 +76,7 @@ ln -sf /Users/personal/Projects/CFOS/automated_plan_reviser_pro/apr ~/.local/bin
 **Confidence:** 85% | **Effort:** Medium | **Impact:** Unified orchestration
 
 **Action:**
-- Add `apr robot run` wrapper in research_tool
+- Add `apr robot run` wrapper in cfos_research_tool
 - Use for spec refinement after triangulation
 
 **Provenance:** Exploration finding: APR's robot mode is designed for agent integration

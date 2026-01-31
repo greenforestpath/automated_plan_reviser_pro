@@ -130,17 +130,17 @@ npx -y @steipete/oracle --engine browser \
 
 **Concrete Steps:**
 ```bash
-# Use research_tool's types.ts as spec (small, real)
-cp /Users/personal/Projects/CFOS/research_tool/src/core/types.ts \
+# Use cfos_research_tool's types.ts as spec (small, real)
+cp /Users/personal/Projects/CFOS/cfos_research_tool/src/core/types.ts \
    experiment_sandbox/fixtures/research-tool-types.md
 
 # Create workflow
 cat > .apr/workflows/rt-types.yaml << 'EOF'
 name: rt-types
-description: Refine research_tool type definitions
+description: Refine cfos_research_tool type definitions
 
 documents:
-  readme: /Users/personal/Projects/CFOS/research_tool/README.md
+  readme: /Users/personal/Projects/CFOS/cfos_research_tool/README.md
   spec: experiment_sandbox/fixtures/research-tool-types.md
 
 oracle:
@@ -279,15 +279,15 @@ Consider:
 
 ### Phase 4: Integration (After Phase 1-3 Succeed)
 
-#### E17: APR Robot in research_tool
-**Learn:** Can research_tool call APR programmatically?
+#### E17: APR Robot in cfos_research_tool
+**Learn:** Can cfos_research_tool call APR programmatically?
 **Value:** Enables unified orchestration
 **Success Path:** Document integration code, propose architecture
 **Failure Path:** Identify blockers, propose workarounds
 
 **Concrete Code:**
 ```typescript
-// research_tool/src/providers/apr.ts
+// cfos_research_tool/src/providers/apr.ts
 import { $ } from 'bun';
 
 export async function callAPR(round: number, workflow: string) {
