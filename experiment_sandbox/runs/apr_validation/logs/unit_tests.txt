@@ -1,0 +1,7 @@
+[2026-02-04 23:36:50] APR CI Test Runner
+[2026-02-04 23:36:50] ==================
+[2026-02-04 23:36:50] Suite: unit
+[2026-02-04 23:36:50] JUnit: false
+
+[2026-02-04 23:36:50] Running pre-flight checks...
+[2026-02-04 23:36:50] ERROR: BATS not found. Run: git submodule update --init --recursive

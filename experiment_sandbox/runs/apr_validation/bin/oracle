@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Mock Oracle for APR validation runs
+# All debug output goes to stderr to avoid interfering with JSON responses
+echo "Mock Oracle called with: $*" >&2
+
+render_mode=false
+write_output=""
+args=("$@")
+for ((i=0; i<${#args[@]}; i++)); do
+    case "${args[$i]}" in
+        --render) render_mode=true ;;
+        --version) echo "oracle 0.8.4 (mock)"; exit 0 ;;
+        --help)
+            echo "Usage: oracle [options]"
+            echo "  --notify"
+            exit 0
+            ;;
+        --write-output)
+            if (( i + 1 < ${#args[@]} )); then
+                write_output="${args[$((i+1))]}"
+            fi
+            ;;
+    esac
+done
+
+case "$1" in
+    status)
+        echo "No active sessions" >&2
+        ;;
+    session)
+        echo "Session: $2" >&2
+        ;;
+    *)
+        if [[ "$render_mode" == "true" ]]; then
+            echo "[SYSTEM]"
+            echo "Mock Oracle render output"
+            echo ""
+            echo "[USER]"
+            echo "Mock prompt content for testing"
+        else
+            if [[ -n "$write_output" ]]; then
+                mkdir -p "$(dirname "$write_output")"
+                echo "Mock output for $*" > "$write_output"
+            fi
+            echo "Mock response for: $*" >&2
+            sleep "${MOCK_ORACLE_SLEEP:-1}"
+        fi
+        ;;
+esac
+exit 0

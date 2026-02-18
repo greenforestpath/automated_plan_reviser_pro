@@ -1,0 +1,31 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Automated Plan Reviser Pro v1.2.2
+  Iterative AI-Powered Spec Refinement
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+  REVISION ROUND 1
+
+  Workflow:     apr-validation
+  Model:        5.2 Thinking
+  Include impl: false
+  Output:       .apr/rounds/apr-validation/round_1.md
+
+DRY RUN
+
+ℹ Would execute:
+
+  oracle --engine browser \
+    -m "5.2 Thinking" \
+    --file \
+    README.md \
+    --file \
+    SPEC.md \
+    --browser-attachments never \
+    --slug "apr-apr-validation-round-1" \
+    --write-output ".apr/rounds/apr-validation/round_1.md" \
+    --notify \
+    --browser-thinking-time "heavy" \
+    --heartbeat 30 \
+    -p "<prompt>"

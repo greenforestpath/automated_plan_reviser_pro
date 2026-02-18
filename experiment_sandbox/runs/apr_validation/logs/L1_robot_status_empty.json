@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "code": "ok",
+  "data": {
+    "configured": false,
+    "default_workflow": "",
+    "workflow_count": 0,
+    "workflows": [],
+    "oracle_available": true,
+    "oracle_method": "global",
+    "config_dir": ".apr",
+    "apr_home": "/home/ubuntu/.local/share/apr"
+  },
+  "hint": "Run 'apr robot init' to initialize, then 'apr setup' to create workflow",
+  "meta": {
+    "v": "1.2.2",
+    "ts": "2026-02-04T22:36:22Z"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "code": "ok",
+  "data": {
+    "valid": true,
+    "errors": [],
+    "warnings": [],
+    "workflow": "apr-validation",
+    "round": "1"
+  },
+  "meta": {
+    "v": "1.2.2",
+    "ts": "2026-02-04T22:42:05Z"
+  }
+}

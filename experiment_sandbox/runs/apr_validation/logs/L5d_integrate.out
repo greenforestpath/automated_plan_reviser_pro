@@ -1,0 +1,50 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Automated Plan Reviser Pro v1.2.2
+  Iterative AI-Powered Spec Refinement
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CLAUDE CODE INTEGRATION PROMPT
+ℹ Round 1 (4.0K) for workflow 'apr-validation'
+
+Copy the following prompt to Claude Code:
+
+─────────────────────────────────────────────────────────────
+First read ALL of the AGENTS.md file and README.md file super carefully
+and understand ALL of both! Then use your code investigation agent mode
+to fully understand the code and technical architecture of the project.
+Read ALL of the specification document at: SPEC.md
+
+Now integrate the following feedback from GPT Pro 5.2 Extended Reasoning
+(Round 1 of the APR iterative refinement process). For each
+suggestion, carefully evaluate whether you agree with the proposed change.
+Then apply the changes you endorse to the specification document.
+
+Be meticulous and use ultrathink.
+
+---
+
+Mock output for --engine browser -m 5.2 Thinking --file README.md --file SPEC.md --browser-attachments never --slug apr-apr-validation-round-1 --write-output .apr/rounds/apr-validation/round_1.md --files-report --heartbeat 30 --notify --browser-thinking-time heavy -p First, read this README:
+
+```
+<contents of README will be included by oracle>
+```
+
+---
+
+NOW: Carefully review this entire plan for me and come up with your best
+revisions in terms of better architecture, new features, changed features,
+etc. to make it better, more robust/reliable, more performant, more
+compelling/useful, etc.
+
+For each proposed change, give me your detailed analysis and
+rationale/justification for why it would make the project better along
+with the git-diff style change versus the original plan shown below:
+
+```
+<contents of spec will be included by oracle>
+```
+
+─────────────────────────────────────────────────────────────
+
+Tip: Use 'apr integrate 1 --copy' to copy to clipboard

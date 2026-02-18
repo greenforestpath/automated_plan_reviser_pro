@@ -1,0 +1,19 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Automated Plan Reviser Pro v1.2.2
+  Iterative AI-Powered Spec Refinement
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+WELCOME TO APR!
+
+  APR automates iterative specification refinement using
+  GPT Pro Extended Reasoning via Oracle.
+
+ℹ To get started, run the setup wizard:
+
+    apr setup
+
+This will configure your workflow and document paths.
+For full documentation, run 'apr help'.
+
