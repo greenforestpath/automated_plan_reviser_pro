@@ -231,7 +231,9 @@ acquire_lock() {
     local lock_path="$lock_dir/${workflow}_round_${round}.lock"
 
     # Use flock if available (preferred - atomic and robust)
-    if command -v flock &>/dev/null; then
+    local flock_bin=""
+    flock_bin=$(type -P flock 2>/dev/null || true)
+    if [[ -n "$flock_bin" ]]; then
         # Open file descriptor without truncating. Only update the PID file after the lock is acquired,
         # otherwise failed attempts can clobber the running process' PID info.
         if ! exec {APR_LOCK_FD}<>"$lock_path"; then
@@ -239,7 +241,7 @@ acquire_lock() {
             APR_LOCK_FD=""
             return 1
         fi
-        if ! flock -n "$APR_LOCK_FD"; then
+        if ! "$flock_bin" -n "$APR_LOCK_FD"; then
             verbose "acquire_lock: flock failed for FD $APR_LOCK_FD ($lock_path)"
             # Failed to acquire: close FD and return
             { exec {APR_LOCK_FD}>&-; } 2>/dev/null || true
@@ -264,7 +266,7 @@ acquire_lock() {
         local pid
         pid=$(cat "$lock_path" 2>/dev/null || echo "")
         # Check if the process is still running
-        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+        if [[ -n "$pid" ]] && { kill -0 "$pid" 2>/dev/null || ps -p "$pid" >/dev/null 2>&1; }; then
             verbose "acquire_lock: fallback lock held by PID $pid"
             return 1
         fi
@@ -700,6 +702,7 @@ ORACLE_BACKUP_PATH=""
 find_oracle_assistant_response() {
     # Find Oracle's assistantResponse.js in the npm installation
     local oracle_path=""
+    local target_file=""
 
     # Try to find oracle binary location
     if command -v oracle &>/dev/null; then
@@ -707,6 +710,21 @@ find_oracle_assistant_response() {
         # Resolve symlinks to find actual installation
         if [[ -L "$oracle_path" ]]; then
             oracle_path=$(readlink -f "$oracle_path" 2>/dev/null || realpath "$oracle_path" 2>/dev/null)
+        fi
+    fi
+
+    # If the resolved executable already lives inside the Oracle package, derive
+    # the package path directly. npm/nvm installs commonly symlink bin/oracle
+    # into @steipete/oracle/dist/bin/oracle-cli.js; walking up from dist/bin
+    # misses the real node_modules root.
+    if [[ "$oracle_path" == *"/node_modules/@steipete/oracle/"* ]]; then
+        local oracle_pkg_dir="${oracle_path%%/node_modules/@steipete/oracle/*}/node_modules/@steipete/oracle"
+        target_file="$oracle_pkg_dir/dist/src/browser/actions/assistantResponse.js"
+        if [[ -f "$target_file" ]]; then
+            ORACLE_ASSISTANT_RESPONSE_PATH="$target_file"
+            ORACLE_BACKUP_PATH="${target_file}.apr-backup"
+            verbose "find_oracle_assistant_response: Found at $target_file"
+            return 0
         fi
     fi
 
@@ -731,7 +749,7 @@ find_oracle_assistant_response() {
         return 1
     fi
 
-    local target_file="$node_modules/@steipete/oracle/dist/src/browser/actions/assistantResponse.js"
+    target_file="$node_modules/@steipete/oracle/dist/src/browser/actions/assistantResponse.js"
     if [[ -f "$target_file" ]]; then
         ORACLE_ASSISTANT_RESPONSE_PATH="$target_file"
         ORACLE_BACKUP_PATH="${target_file}.apr-backup"
@@ -741,6 +759,17 @@ find_oracle_assistant_response() {
 
     verbose "find_oracle_assistant_response: assistantResponse.js not found at $target_file"
     return 1
+}
+
+apr_sed_in_place() {
+    local expression="$1"
+    local file="$2"
+
+    if sed --version >/dev/null 2>&1; then
+        sed -i "$expression" "$file"
+    else
+        sed -i '' "$expression" "$file"
+    fi
 }
 
 patch_oracle_stability_thresholds() {
@@ -791,22 +820,26 @@ patch_oracle_stability_thresholds() {
     # Patch 1: minStableMs in pollAssistantCompletion (line ~293)
     # Original: const minStableMs = shortAnswer ? 8000 : 1200;
     # Patched:  const minStableMs = shortAnswer ? 15000 : 30000; /* APR_PATCHED_STABILITY_THRESHOLDS */
-    sed -i "s|const minStableMs = shortAnswer ? 8000 : 1200;|const minStableMs = shortAnswer ? ${APR_ORACLE_SHORT_STABLE_MS} : ${APR_ORACLE_MIN_STABLE_MS}; /* APR_PATCHED_STABILITY_THRESHOLDS */|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const minStableMs = shortAnswer ? 8000 : 1200;|const minStableMs = shortAnswer ? ${APR_ORACLE_SHORT_STABLE_MS} : ${APR_ORACLE_MIN_STABLE_MS}; /* APR_PATCHED_STABILITY_THRESHOLDS */|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const minStableMs = shortAnswer ? 8000 : mediumAnswer ? 1200 : longAnswer ? 2000 : 3000;|const minStableMs = shortAnswer ? ${APR_ORACLE_SHORT_STABLE_MS} : mediumAnswer ? ${APR_ORACLE_MIN_STABLE_MS} : longAnswer ? ${APR_ORACLE_MIN_STABLE_MS} : ${APR_ORACLE_MIN_STABLE_MS}; /* APR_PATCHED_STABILITY_THRESHOLDS */|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
 
     # Patch 2: requiredStableCycles in pollAssistantCompletion (line ~291)
     # Original: const requiredStableCycles = shortAnswer ? 12 : 6;
     # Patched:  const requiredStableCycles = shortAnswer ? 18 : 12;
-    sed -i "s|const requiredStableCycles = shortAnswer ? 12 : 6;|const requiredStableCycles = shortAnswer ? 18 : ${APR_ORACLE_STABLE_CYCLES};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const requiredStableCycles = shortAnswer ? 12 : 6;|const requiredStableCycles = shortAnswer ? 18 : ${APR_ORACLE_STABLE_CYCLES};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const requiredStableCycles = shortAnswer ? 12 : mediumAnswer ? 8 : longAnswer ? 8 : 10;|const requiredStableCycles = shortAnswer ? 18 : mediumAnswer ? ${APR_ORACLE_STABLE_CYCLES} : longAnswer ? ${APR_ORACLE_STABLE_CYCLES} : ${APR_ORACLE_STABLE_CYCLES};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
 
     # Patch 3: settleWindowMs in waitForSettle (line ~551)
     # Original: const settleWindowMs = shortAnswer ? 12_000 : 5_000;
     # Patched:  const settleWindowMs = shortAnswer ? 15_000 : 30_000;
-    sed -i "s|const settleWindowMs = shortAnswer ? 12_000 : 5_000;|const settleWindowMs = shortAnswer ? 15_000 : ${APR_ORACLE_SETTLE_WINDOW_MS};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const settleWindowMs = shortAnswer ? 12_000 : 5_000;|const settleWindowMs = shortAnswer ? 15_000 : ${APR_ORACLE_SETTLE_WINDOW_MS};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const settleWindowMs = shortAnswer ? 12_000 : mediumAnswer ? 5_000 : longAnswer ? 8_000 : 10_000;|const settleWindowMs = shortAnswer ? 15_000 : mediumAnswer ? ${APR_ORACLE_SETTLE_WINDOW_MS} : longAnswer ? ${APR_ORACLE_SETTLE_WINDOW_MS} : ${APR_ORACLE_SETTLE_WINDOW_MS};|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
 
     # Patch 4: stableTarget in waitForSettle (line ~557)
     # Original: const stableTarget = shortAnswer ? 6 : 3;
     # Patched:  const stableTarget = shortAnswer ? 12 : 6;
-    sed -i "s|const stableTarget = shortAnswer ? 6 : 3;|const stableTarget = shortAnswer ? 12 : 6;|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const stableTarget = shortAnswer ? 6 : 3;|const stableTarget = shortAnswer ? 12 : 6;|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
+    apr_sed_in_place "s|const stableTarget = shortAnswer ? 6 : mediumAnswer ? 3 : longAnswer ? 5 : 6;|const stableTarget = shortAnswer ? 12 : mediumAnswer ? 6 : longAnswer ? 6 : 6;|g" "$ORACLE_ASSISTANT_RESPONSE_PATH"
 
     # Verify patch was applied
     if grep -q "APR_PATCHED_STABILITY_THRESHOLDS" "$ORACLE_ASSISTANT_RESPONSE_PATH" 2>/dev/null; then
@@ -891,7 +924,6 @@ preflight_check() {
     if ! patch_oracle_stability_thresholds; then
         print_warning "Oracle stability patch failed - responses may be truncated"
         print_warning "Set APR_NO_ORACLE_PATCH=1 to disable this warning"
-        has_warnings=true
     fi
 
     # Check source files exist and are readable
