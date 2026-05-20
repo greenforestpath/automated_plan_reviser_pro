@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "code": "validation_failed",
+  "data": {
+    "kind": "output_exists",
+    "file": ".apr/rounds/apr-validation/round_1.md"
+  },
+  "hint": "Output file already exists",
+  "meta": {
+    "v": "1.2.2",
+    "ts": "2026-02-04T22:42:07Z"
+  }
+}
+APR_ERROR_CODE=validation_failed

@@ -1,0 +1,169 @@
+[2026-02-04 23:37:30] L0: version
+[2026-02-04 23:37:30] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:37:30] L1: robot status (empty project)
+[2026-02-04 23:37:30] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:37:30] FAIL: expected not_configured status
+[2026-02-04 23:37:39] L0: version
+[2026-02-04 23:37:39] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:37:40] L1: robot status (empty project)
+[2026-02-04 23:37:40] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:37:40] FAIL: expected not_configured status
+[2026-02-04 23:37:52] L0: version
+[2026-02-04 23:37:52] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:37:52] L1: robot status (empty project)
+[2026-02-04 23:37:52] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:37:52] L2: robot status (configured project)
+[2026-02-04 23:37:52] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:37:52] L3: render
+[2026-02-04 23:37:52] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:37:52] L4: dry-run
+[2026-02-04 23:37:52] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:37:52] FAIL: dry-run missing browser-attachments flag
+[2026-02-04 23:38:00] L0: version
+[2026-02-04 23:38:00] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:38:00] L1: robot status (empty project)
+[2026-02-04 23:38:00] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:38:00] L2: robot status (configured project)
+[2026-02-04 23:38:00] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:38:01] L3: render
+[2026-02-04 23:38:01] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:38:01] L4: dry-run
+[2026-02-04 23:38:01] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:38:01] L5: run (mock)
+[2026-02-04 23:38:01] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:38:02] OK: All ladder steps passed
+[2026-02-04 23:40:53] L0: version
+[2026-02-04 23:40:53] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:40:53] L1: robot status (empty project)
+[2026-02-04 23:40:53] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:40:53] L2: robot status (configured project)
+[2026-02-04 23:40:53] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:40:53] L2b: robot workflows (configured project)
+[2026-02-04 23:40:53] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:40:53] L2c: robot validate (configured project)
+[2026-02-04 23:40:53] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate
+[2026-02-04 23:40:53] STEP L2c_robot_validate exited non-zero
+[2026-02-04 23:41:03] L0: version
+[2026-02-04 23:41:03] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:41:03] L1: robot status (empty project)
+[2026-02-04 23:41:03] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:03] L2: robot status (configured project)
+[2026-02-04 23:41:03] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:04] L2b: robot workflows (configured project)
+[2026-02-04 23:41:04] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:41:04] L2c: robot validate (configured project)
+[2026-02-04 23:41:04] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate 1
+[2026-02-04 23:41:04] L3: render
+[2026-02-04 23:41:04] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:41:04] L3b: list workflows
+[2026-02-04 23:41:04] RUN L3b_list: /data/projects/CFOS/automated_plan_reviser_pro/apr list
+[2026-02-04 23:41:04] L3c: status
+[2026-02-04 23:41:04] RUN L3c_status: /data/projects/CFOS/automated_plan_reviser_pro/apr status
+[2026-02-04 23:41:04] L4: dry-run
+[2026-02-04 23:41:04] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:41:04] L5: run (mock)
+[2026-02-04 23:41:04] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:41:05] L5b: robot run (mock)
+[2026-02-04 23:41:05] RUN L5b_robot_run: /data/projects/CFOS/automated_plan_reviser_pro/apr robot run 1
+[2026-02-04 23:41:05] STEP L5b_robot_run exited non-zero
+[2026-02-04 23:41:19] L0: version
+[2026-02-04 23:41:19] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:41:19] L1: robot status (empty project)
+[2026-02-04 23:41:19] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:19] L2: robot status (configured project)
+[2026-02-04 23:41:19] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:19] L2b: robot workflows (configured project)
+[2026-02-04 23:41:19] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:41:19] L2c: robot validate (configured project)
+[2026-02-04 23:41:19] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate 1
+[2026-02-04 23:41:19] L3: render
+[2026-02-04 23:41:19] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:41:20] L3b: list workflows
+[2026-02-04 23:41:20] RUN L3b_list: /data/projects/CFOS/automated_plan_reviser_pro/apr list
+[2026-02-04 23:41:20] L3c: status
+[2026-02-04 23:41:20] RUN L3c_status: /data/projects/CFOS/automated_plan_reviser_pro/apr status
+[2026-02-04 23:41:20] L4: dry-run
+[2026-02-04 23:41:20] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:41:20] L5: run (mock)
+[2026-02-04 23:41:20] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:41:21] L5b: robot run (mock)
+[2026-02-04 23:41:21] RUN L5b_robot_run: /data/projects/CFOS/automated_plan_reviser_pro/apr robot run 1
+[2026-02-04 23:41:21] STEP L5b_robot_run exited non-zero
+[2026-02-04 23:41:30] L0: version
+[2026-02-04 23:41:30] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:41:30] L1: robot status (empty project)
+[2026-02-04 23:41:30] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:30] L2: robot status (configured project)
+[2026-02-04 23:41:30] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:30] L2b: robot workflows (configured project)
+[2026-02-04 23:41:30] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:41:30] L2c: robot validate (configured project)
+[2026-02-04 23:41:30] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate 1
+[2026-02-04 23:41:30] L3: render
+[2026-02-04 23:41:30] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:41:30] L3b: list workflows
+[2026-02-04 23:41:30] RUN L3b_list: /data/projects/CFOS/automated_plan_reviser_pro/apr list
+[2026-02-04 23:41:30] L3c: status
+[2026-02-04 23:41:30] RUN L3c_status: /data/projects/CFOS/automated_plan_reviser_pro/apr status
+[2026-02-04 23:41:30] L4: dry-run
+[2026-02-04 23:41:30] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:41:31] L5: run (mock)
+[2026-02-04 23:41:31] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:41:31] L5b: robot run (mock)
+[2026-02-04 23:41:31] RUN L5b_robot_run: /data/projects/CFOS/automated_plan_reviser_pro/apr robot run 1
+[2026-02-04 23:41:32] STEP L5b_robot_run exited non-zero (allowed)
+[2026-02-04 23:41:32] FAIL: expected ok or output_exists from robot run
+[2026-02-04 23:41:52] L0: version
+[2026-02-04 23:41:52] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:41:52] L1: robot status (empty project)
+[2026-02-04 23:41:52] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:52] L2: robot status (configured project)
+[2026-02-04 23:41:52] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:41:52] L2b: robot workflows (configured project)
+[2026-02-04 23:41:52] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:41:52] L2c: robot validate (configured project)
+[2026-02-04 23:41:52] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate 1
+[2026-02-04 23:41:53] L3: render
+[2026-02-04 23:41:53] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:41:53] L3b: list workflows
+[2026-02-04 23:41:53] RUN L3b_list: /data/projects/CFOS/automated_plan_reviser_pro/apr list
+[2026-02-04 23:41:53] L3c: status
+[2026-02-04 23:41:53] RUN L3c_status: /data/projects/CFOS/automated_plan_reviser_pro/apr status
+[2026-02-04 23:41:53] L4: dry-run
+[2026-02-04 23:41:53] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:41:53] L5: run (mock)
+[2026-02-04 23:41:53] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:41:54] L5b: robot run (mock)
+[2026-02-04 23:41:54] RUN L5b_robot_run: /data/projects/CFOS/automated_plan_reviser_pro/apr robot run 1
+[2026-02-04 23:41:54] STEP L5b_robot_run exited non-zero (allowed)
+[2026-02-04 23:41:54] L5c: history
+[2026-02-04 23:41:54] RUN L5c_history: /data/projects/CFOS/automated_plan_reviser_pro/apr history
+[2026-02-04 23:41:54] FAIL: history output missing round_1
+[2026-02-04 23:42:05] L0: version
+[2026-02-04 23:42:05] RUN L0_version: /data/projects/CFOS/automated_plan_reviser_pro/apr --version
+[2026-02-04 23:42:05] L1: robot status (empty project)
+[2026-02-04 23:42:05] RUN L1_robot_status_empty: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:42:05] L2: robot status (configured project)
+[2026-02-04 23:42:05] RUN L2_robot_status_configured: /data/projects/CFOS/automated_plan_reviser_pro/apr robot status
+[2026-02-04 23:42:05] L2b: robot workflows (configured project)
+[2026-02-04 23:42:05] RUN L2b_robot_workflows: /data/projects/CFOS/automated_plan_reviser_pro/apr robot workflows
+[2026-02-04 23:42:05] L2c: robot validate (configured project)
+[2026-02-04 23:42:05] RUN L2c_robot_validate: /data/projects/CFOS/automated_plan_reviser_pro/apr robot validate 1
+[2026-02-04 23:42:05] L3: render
+[2026-02-04 23:42:05] RUN L3_render: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --render
+[2026-02-04 23:42:05] L3b: list workflows
+[2026-02-04 23:42:05] RUN L3b_list: /data/projects/CFOS/automated_plan_reviser_pro/apr list
+[2026-02-04 23:42:05] L3c: status
+[2026-02-04 23:42:05] RUN L3c_status: /data/projects/CFOS/automated_plan_reviser_pro/apr status
+[2026-02-04 23:42:06] L4: dry-run
+[2026-02-04 23:42:06] RUN L4_dry_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1 --dry-run
+[2026-02-04 23:42:06] L5: run (mock)
+[2026-02-04 23:42:06] RUN L5_run: /data/projects/CFOS/automated_plan_reviser_pro/apr run 1
+[2026-02-04 23:42:06] L5b: robot run (mock)
+[2026-02-04 23:42:06] RUN L5b_robot_run: /data/projects/CFOS/automated_plan_reviser_pro/apr robot run 1
+[2026-02-04 23:42:07] STEP L5b_robot_run exited non-zero (allowed)
+[2026-02-04 23:42:07] L5c: history
+[2026-02-04 23:42:07] RUN L5c_history: /data/projects/CFOS/automated_plan_reviser_pro/apr history
+[2026-02-04 23:42:07] L5d: integrate
+[2026-02-04 23:42:07] RUN L5d_integrate: /data/projects/CFOS/automated_plan_reviser_pro/apr integrate 1
+[2026-02-04 23:42:07] OK: All ladder steps passed

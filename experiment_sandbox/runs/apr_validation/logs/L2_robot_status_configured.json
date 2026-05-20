@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "code": "ok",
+  "data": {
+    "configured": true,
+    "default_workflow": "apr-validation",
+    "workflow_count": 1,
+    "workflows": [
+      "apr-validation"
+    ],
+    "oracle_available": true,
+    "oracle_method": "global",
+    "config_dir": ".apr",
+    "apr_home": "/home/ubuntu/.local/share/apr"
+  },
+  "meta": {
+    "v": "1.2.2",
+    "ts": "2026-02-04T22:36:26Z"
+  }
+}

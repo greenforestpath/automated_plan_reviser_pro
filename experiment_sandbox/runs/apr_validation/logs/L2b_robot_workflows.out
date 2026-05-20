@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "code": "ok",
+  "data": {
+    "workflows": [
+      {
+        "name": "apr-validation",
+        "description": "Minimal APR validation workflow"
+      }
+    ]
+  },
+  "meta": {
+    "v": "1.2.2",
+    "ts": "2026-02-04T22:42:05Z"
+  }
+}

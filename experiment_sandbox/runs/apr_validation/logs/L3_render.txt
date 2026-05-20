@@ -1,0 +1,40 @@
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Automated Plan Reviser Pro v1.2.2
+  Iterative AI-Powered Spec Refinement
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+
+  REVISION ROUND 1
+
+  Workflow:     apr-validation
+  Model:        5.2 Thinking
+  Include impl: false
+  Output:       .apr/rounds/apr-validation/round_1.md
+
+ℹ Rendering bundle for manual use...
+Mock Oracle called with: --file README.md --file SPEC.md --render -p First, read this README:
+
+```
+<contents of README will be included by oracle>
+```
+
+---
+
+NOW: Carefully review this entire plan for me and come up with your best
+revisions in terms of better architecture, new features, changed features,
+etc. to make it better, more robust/reliable, more performant, more
+compelling/useful, etc.
+
+For each proposed change, give me your detailed analysis and
+rationale/justification for why it would make the project better along
+with the git-diff style change versus the original plan shown below:
+
+```
+<contents of spec will be included by oracle>
+```
+[SYSTEM]
+Mock Oracle render output
+
+[USER]
+Mock prompt content for testing
