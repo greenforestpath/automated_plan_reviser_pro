@@ -3050,14 +3050,30 @@ run_round() {
     fi
 
     # Parse config (simple grep-based for now)
-    local readme_path spec_path impl_path model output_dir impl_every_n thinking_time
+    local readme_path spec_path impl_path model output_dir impl_every_n thinking_time oracle_engine
     readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
     spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
     impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
     model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
+    local oracle_engine
+    oracle_engine=$(yaml_unquote "$(get_config_value "engine" "$config_path")")
+    [[ -z "$oracle_engine" ]] && oracle_engine="browser"
+    if [[ "$oracle_engine" != "browser" && "$oracle_engine" != "api" ]]; then
+        release_lock 2>/dev/null || true
+        robot_fail "config_error" "$(jq -nc --arg engine "$oracle_engine" '{engine: $engine}')" \
+            "Unsupported oracle.engine; use browser or api"
+        return $?
+    fi
     output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
     impl_every_n=$(yaml_unquote "$(get_config_value "impl_every_n" "$config_path")")
     thinking_time=$(yaml_unquote "$(get_config_value "thinking_time" "$config_path")")
+    oracle_engine=$(yaml_unquote "$(get_config_value "engine" "$config_path")")
+    [[ -z "$oracle_engine" ]] && oracle_engine="browser"
+    if [[ "$oracle_engine" != "browser" && "$oracle_engine" != "api" ]]; then
+        print_error "Unsupported oracle.engine '$oracle_engine' in workflow"
+        print_info "Use oracle.engine: browser or oracle.engine: api"
+        exit $EXIT_CONFIG_ERROR
+    fi
 
     # Auto-include implementation every N rounds if configured
     if [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
@@ -3084,6 +3100,7 @@ run_round() {
     verbose "  Spec: $spec_path"
     verbose "  Implementation: ${impl_path:-<not configured>}"
     verbose "  Model: $model"
+    verbose "  Oracle engine: $oracle_engine"
     verbose "  Output dir: $output_dir"
     verbose "  impl_every_n: ${impl_every_n:-<not configured>}"
     verbose "  thinking_time: ${thinking_time:-<not configured>}"
@@ -3231,18 +3248,18 @@ run_round() {
         echo "" >&2
         print_info "Would execute:"
         echo "" >&2
-        echo "  ${ORACLE_CMD[*]} --engine browser \\" >&2
+        echo "  ${ORACLE_CMD[*]} --engine $oracle_engine \\" >&2
         echo "    -m \"$model\" \\" >&2
         for f in "${file_args[@]}"; do
             echo "    $f \\" >&2
         done
-        echo "    --browser-attachments never \\" >&2
+        [[ "$oracle_engine" == "browser" ]] && echo "    --browser-attachments never \\" >&2
         echo "    --slug \"$slug\" \\" >&2
         echo "    --write-output \"$output_file\" \\" >&2
-        [[ "$manual_login" == "true" ]] && echo "    --browser-manual-login \\" >&2
-        [[ "$keep_browser" == "true" ]] && echo "    --browser-keep-browser \\" >&2
+        [[ "$oracle_engine" == "browser" && "$manual_login" == "true" ]] && echo "    --browser-manual-login \\" >&2
+        [[ "$oracle_engine" == "browser" && "$keep_browser" == "true" ]] && echo "    --browser-keep-browser \\" >&2
         [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && echo "    --notify \\" >&2
-        [[ -n "$thinking_time" ]] && echo "    --browser-thinking-time \"$thinking_time\" \\" >&2
+        [[ "$oracle_engine" == "browser" && -n "$thinking_time" ]] && echo "    --browser-thinking-time \"$thinking_time\" \\" >&2
         echo "    --heartbeat 30 \\" >&2
         echo "    -p \"<prompt>\"" >&2
         exit $EXIT_SUCCESS
@@ -3267,20 +3284,21 @@ run_round() {
 
     # Build Oracle command
     local oracle_args=(
-        --engine browser
+        --engine "$oracle_engine"
         -m "$model"
         "${file_args[@]}"
-        --browser-attachments never  # Paste inline, never upload as files
         --slug "$slug"
         --write-output "$output_file"
         --files-report
         --heartbeat 30
     )
 
+    [[ "$oracle_engine" == "browser" ]] && oracle_args+=(--browser-attachments never)
     [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
-    [[ "$manual_login" == "true" ]] && oracle_args+=(--browser-manual-login)
-    [[ "$keep_browser" == "true" ]] && oracle_args+=(--browser-keep-browser)
-    [[ -n "$thinking_time" ]] && oracle_args+=(--browser-thinking-time "$thinking_time")
+    [[ "$oracle_engine" == "api" && "$wait_mode" == "true" ]] && oracle_args+=(--wait)
+    [[ "$oracle_engine" == "browser" && "$manual_login" == "true" ]] && oracle_args+=(--browser-manual-login)
+    [[ "$oracle_engine" == "browser" && "$keep_browser" == "true" ]] && oracle_args+=(--browser-keep-browser)
+    [[ "$oracle_engine" == "browser" && -n "$thinking_time" ]] && oracle_args+=(--browser-thinking-time "$thinking_time")
     oracle_args+=(-p "$prompt")
 
     verbose "Oracle command: ${ORACLE_CMD[*]} ${oracle_args[*]}"
@@ -5797,18 +5815,18 @@ robot_run() {
 
     # Build Oracle command
     local oracle_args=(
-        --engine browser
+        --engine "$oracle_engine"
         -m "$model"
         "${file_args[@]}"
-        --browser-attachments never  # Paste inline, never upload as files
         --slug "$slug"
         --write-output "$output_file"
         --files-report
         --heartbeat 30
-        -p "$prompt"
     )
 
+    [[ "$oracle_engine" == "browser" ]] && oracle_args+=(--browser-attachments never)
     [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
+    oracle_args+=(-p "$prompt")
 
     verbose "robot_run Oracle command: ${ORACLE_CMD[*]} ${oracle_args[*]}"
     verbose "robot_run output_file: $output_file"
