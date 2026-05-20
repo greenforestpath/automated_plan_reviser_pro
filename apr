@@ -3050,7 +3050,7 @@ run_round() {
     fi
 
     # Parse config (simple grep-based for now)
-    local readme_path spec_path impl_path model output_dir impl_every_n thinking_time
+    local readme_path spec_path impl_path model output_dir impl_every_n thinking_time browser_tab
     readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
     spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
     impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
@@ -3058,6 +3058,8 @@ run_round() {
     output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
     impl_every_n=$(yaml_unquote "$(get_config_value "impl_every_n" "$config_path")")
     thinking_time=$(yaml_unquote "$(get_config_value "thinking_time" "$config_path")")
+    browser_tab=$(yaml_unquote "$(get_config_value "browser_tab" "$config_path")")
+    browser_tab="${APR_BROWSER_TAB_REF:-$browser_tab}"
 
     # Auto-include implementation every N rounds if configured
     if [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
@@ -3238,6 +3240,7 @@ run_round() {
             echo "    $f \\" >&2
         done
         echo "    --browser-attachments never \\" >&2
+        [[ -n "$browser_tab" ]] && echo "    --browser-tab \"$browser_tab\" \\" >&2
         echo "    --slug \"$slug\" \\" >&2
         echo "    --write-output \"$output_file\" \\" >&2
         [[ "$manual_login" == "true" ]] && echo "    --browser-manual-login \\" >&2
@@ -3278,6 +3281,7 @@ run_round() {
         --heartbeat 30
     )
 
+    [[ -n "$browser_tab" ]] && oracle_args+=(--browser-tab "$browser_tab")
     [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
     [[ "$manual_login" == "true" ]] && oracle_args+=(--browser-manual-login)
     [[ "$keep_browser" == "true" ]] && oracle_args+=(--browser-keep-browser)
