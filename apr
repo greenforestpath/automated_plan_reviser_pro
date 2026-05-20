@@ -3280,6 +3280,7 @@ run_round() {
         "${file_args[@]}"
         --slug "$slug"
         --write-output "$output_file"
+        --force
         --files-report
         --heartbeat 30
     )
@@ -5811,6 +5812,7 @@ robot_run() {
         "${file_args[@]}"
         --slug "$slug"
         --write-output "$output_file"
+        --force
         --files-report
         --heartbeat 30
     )
