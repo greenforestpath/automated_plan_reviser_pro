@@ -5703,13 +5703,15 @@ robot_run() {
     fi
 
     # Parse config
-    local readme_path spec_path impl_path model output_dir impl_every_n
+    local readme_path spec_path impl_path model output_dir impl_every_n browser_tab
     readme_path=$(yaml_unquote "$(get_config_value "readme" "$config_path")")
     spec_path=$(yaml_unquote "$(get_config_value "spec" "$config_path")")
     impl_path=$(yaml_unquote "$(get_config_value "implementation" "$config_path")")
     model=$(yaml_unquote "$(get_config_value "model" "$config_path")")
     output_dir=$(yaml_unquote "$(get_config_value "output_dir" "$config_path")")
     impl_every_n=$(yaml_unquote "$(get_config_value "impl_every_n" "$config_path")")
+    browser_tab=$(yaml_unquote "$(get_config_value "browser_tab" "$config_path")")
+    browser_tab="${APR_BROWSER_TAB_REF:-$browser_tab}"
 
     # Auto-include implementation every N rounds if configured
     if [[ -n "$impl_every_n" && "$impl_every_n" =~ ^[0-9]+$ && "$impl_every_n" -gt 0 ]]; then
@@ -5812,6 +5814,7 @@ robot_run() {
         --heartbeat 30
     )
 
+    [[ -n "$browser_tab" ]] && oracle_args+=(--browser-tab "$browser_tab")
     [[ "$ORACLE_SUPPORTS_NOTIFY" == "true" ]] && oracle_args+=(--notify)
     oracle_args+=(-p "$prompt")
 
